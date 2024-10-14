@@ -8,13 +8,13 @@ public interface Raster
      * Retruns the number of columns in this Raster
      * @return number of columns
      */
-    int width();
+    int getWidth();
 
     /**
      * Returns the number of rows in this Raster
      * @return number of rows
      */
-    int height();
+    int getHeight();
 
     /**
      * Sets the provided color on the pixel specified by the given pixel address
@@ -23,7 +23,7 @@ public interface Raster
      * @param r row pixel address
      * @param color new color
      */
-    void setColor(int c, int r, int color);
+    boolean setColor(int c, int r, int color);
 
     /**
      * Returns the color stored at the specified address

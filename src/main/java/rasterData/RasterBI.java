@@ -1,5 +1,6 @@
 package rasterData;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
@@ -13,22 +14,26 @@ public class RasterBI implements Raster
     }
 
     @Override
-    public int width()
+    public int getWidth()
     {
         return image.getWidth();
     }
 
     @Override
-    public int height()
+    public int getHeight()
     {
         return image.getHeight();
     }
 
     @Override
-    public void setColor(int c, int r, int color)
+    public boolean setColor(int c, int r, int color)
     {
         if(c < image.getWidth() && c >= 0 && r < image.getHeight() && r >= 0)
+        {
             image.setRGB(c, r, color);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -38,5 +43,25 @@ public class RasterBI implements Raster
             return Optional.of(image.getRGB(c, r));
         else
             return Optional.empty();
+    }
+
+    public void clear(int color)
+    {
+        Graphics gr = image.getGraphics();
+        gr.setColor(new Color(color));
+        gr.fillRect(0, 0, image.getWidth(), image.getHeight());
+    }
+
+    public void clear()
+    {
+        Graphics gr = image.getGraphics();
+        gr.setColor(new Color(0x2f2f2f));
+        gr.fillRect(0, 0, image.getWidth(), image.getHeight());
+    }
+
+    public void present(Graphics graphics)
+    {
+        if(graphics != null)
+            graphics.drawImage(image, 0, 0, null);
     }
 }

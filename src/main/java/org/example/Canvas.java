@@ -1,11 +1,13 @@
 package org.example;
 
+import rasterData.RasterBI;
+import rasterOps.TrivialLiner;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
@@ -24,20 +26,29 @@ public class Canvas
 {
     private JFrame frame;
     private JPanel panel;
-    private BufferedImage img;
+    private RasterBI img;
 
     private int currentX;
     private int currentY;
 
+    private TrivialLiner liner;
+    private int r1;
+    private int c1;
+    private int r2;
+    private int c2;
+
     public Canvas(int width, int height) {
         frame = new JFrame();
+
+        img = new RasterBI(width, height);
+
+        liner = new TrivialLiner();
 
         frame.setLayout(new BorderLayout());
         frame.setTitle("UHK FIM PGRF : " + this.getClass().getName());
         frame.setResizable(false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         currentX = img.getWidth() / 2;
         currentY = img.getHeight() / 2;
 
@@ -47,7 +58,7 @@ public class Canvas
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                present(g);
+                img.present(g);
             }
         };
 
@@ -55,37 +66,63 @@ public class Canvas
 
         frame.addKeyListener(new KeyAdapter()
         {
+            int moveIndex = 3;
             @Override
             public void keyPressed(KeyEvent e)
             {
-                clear();
-                if(e.getKeyCode() == KeyEvent.VK_UP)
+                img.clear();
+                if(e.getKeyCode() == KeyEvent.VK_UP && img.setColor(currentX, currentY - moveIndex, 0xffff00))
                 {
-                    currentY--;
-                    img.setRGB(currentX, currentY,0xffff00);
+                    currentY -= moveIndex;
+                    img.setColor(currentX, currentY,0xffff00);
                     panel.repaint();
                 }
 
-                if(e.getKeyCode() == KeyEvent.VK_DOWN)
+                if(e.getKeyCode() == KeyEvent.VK_DOWN && img.setColor(currentX, currentY + moveIndex, 0xffff00))
                 {
-                    currentY++;
-                    img.setRGB(currentX, currentY,0xffff00);
+                    currentY += moveIndex;
+                    img.setColor(currentX, currentY,0xffff00);
                     panel.repaint();
                 }
 
-                if(e.getKeyCode() == KeyEvent.VK_RIGHT)
+                if(e.getKeyCode() == KeyEvent.VK_RIGHT && img.setColor(currentX + moveIndex, currentY, 0xffff00))
                 {
-                    currentX++;
-                    img.setRGB(currentX, currentY,0xffff00);
+                    currentX += moveIndex;
+                    img.setColor(currentX, currentY,0xffff00);
                     panel.repaint();
                 }
 
-                if(e.getKeyCode() == KeyEvent.VK_LEFT)
+                if(e.getKeyCode() == KeyEvent.VK_LEFT && img.setColor(currentX - moveIndex, currentY, 0xffff00))
                 {
-                    currentX--;
-                    img.setRGB(currentX, currentY,0xffff00);
+                    currentX -= moveIndex;
+                    img.setColor(currentX, currentY,0xffff00);
                     panel.repaint();
                 }
+            }
+        });
+
+        frame.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e)
+            {
+                r1 = e.getY();
+                c1 = e.getX();
+            }
+        });
+
+        frame.addMouseMotionListener(new MouseMotionAdapter()
+        {
+            @Override
+            public void mouseDragged(MouseEvent e)
+            {
+                img.clear();
+
+                r2 = e.getY();
+                c2 = e.getX();
+
+                liner.draw(img, c1, r1, c2, r2, 0xffff00);
+                panel.repaint();
             }
         });
 
@@ -94,36 +131,8 @@ public class Canvas
         frame.setVisible(true);
     }
 
-    public void clear() {
-        Graphics gr = img.getGraphics();
-        gr.setColor(new Color(0x2f2f2f));
-        gr.fillRect(0, 0, img.getWidth(), img.getHeight());
-    }
-
-    public void present(Graphics graphics) {
-        graphics.drawImage(img, 0, 0, null);
-    }
-
-    public void draw() {
-        clear();
-//        img.setRGB(img.getWidth() / 2, img.getHeight() / 2,0xffff00);
-
-//        for (int i = 0; i < img.getHeight(); i++)
-//        {
-//            for (int j = 0; j < img.getWidth(); j++)
-//            {
-//                if(i == j || i + j == img.getWidth())
-//                {
-//                    img.setRGB(i, j,0xff0000);
-//                }
-//            }
-//        }
-
-
-    }
-
     public void start() {
-        draw();
+        img.clear();
         panel.repaint();
     }
 
