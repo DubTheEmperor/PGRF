@@ -1,5 +1,7 @@
 package rasterOps;
 
+import objectData.Line;
+import objectData.Point2D;
 import rasterData.Raster;
 
 /**
@@ -10,11 +12,13 @@ public interface Liner
     /**
      * Draws a line onto the given raster using the provided color
      * @param raster raster to be drawn onto
-     * @param c1 column address of the starting point
-     * @param r1 row address of the starting point
-     * @param c2 column address of the end point
-     * @param r2 row address of the end point
+     * @param point1 address of first point
+     * @param point2 address of second point
      * @param color color of the resulting line segment
      */
-    void draw(Raster raster, int c1, int r1, int c2, int r2, int color);
+    void draw(Raster raster, Point2D point1, Point2D point2, int color);
+
+    void draw(Raster raster, Point2D point1, Point2D point2, int color, int thickness);
+
+    void draw(Raster raster, Line line);
 }

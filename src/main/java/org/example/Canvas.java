@@ -1,122 +1,209 @@
 package org.example;
 
+import ToolBarData.ToolBar;
+import objectData.Line;
+import objectData.Point2D;
+import objectData.Polygon;
 import rasterData.RasterBI;
+import rasterOps.Polygoner;
+import rasterOps.Shape;
 import rasterOps.TrivialLiner;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.tools.Tool;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
-
-/**
- * trida pro kresleni na platno: zobrazeni pixelu
- *
- * @author PGRF FIM UHK
- * @version 2020
- */
-
-public class Canvas
+public class Canvas extends JPanel
 {
-	private JFrame frame;
-	private JPanel panel;
 	private RasterBI img;
 
 	private int currentX;
 	private int currentY;
 
+	private boolean shiftPressed;
+
 	private TrivialLiner liner;
+	private Polygoner polygoner;
+
 	private int r1;
 	private int c1;
 	private int r2;
 	private int c2;
 
-	private List<int[]> lines;
+	private Polygon polygon;
+	private Line line;
 
-	public Canvas(int width, int height)
+	private List<Shape> shapes;
+
+	public Canvas(int width, int height, ToolBar toolBar)
 	{
-		frame = new JFrame();
+		shiftPressed = false;
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
-		lines = new ArrayList<>();
-
-		frame.setLayout(new BorderLayout());
-		frame.setTitle("UHK FIM PGRF : " + this.getClass().getName());
-		frame.setResizable(false);
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		polygoner = new Polygoner();
+		shapes = new ArrayList<>();
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
 
-		panel = new JPanel()
-		{
-			private static final long serialVersionUID = 1L;
+		setPreferredSize(new Dimension(width, height));
 
-			@Override
-			public void paintComponent(Graphics g)
-			{
-				super.paintComponent(g);
-				img.present(g);
-			}
-		};
+		start();
 
-		panel.setPreferredSize(new Dimension(width, height));
-
-		frame.addMouseListener(new MouseAdapter()
+		addMouseListener(new MouseAdapter()
 		{
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				r1 = e.getY();
+				int selectedButton = toolBar.getSelectedButton();
+
 				c1 = e.getX();
+				r1 = e.getY();
+
+				if(selectedButton != ToolBar.POLYGON_BUTTON)
+				{
+					addPolygon();
+				}
+
+				if(selectedButton == ToolBar.POLYGON_BUTTON)
+				{
+					img.clear();
+
+					if(polygon == null)
+						polygon = new Polygon(0, toolBar.getThickness());
+
+					polygon.addPoint(new Point2D(c1, r1));
+					polygoner.draw(img, polygon, liner);
+				}
+				repaint();
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e)
 			{
-				lines.add(new int[]{c1, r1, e.getX(), e.getY()});
+				int selectedButton = toolBar.getSelectedButton();
+
+				if(selectedButton == ToolBar.LINE_BUTTON)
+				{
+					shapes.add(line);
+				}
 			}
 		});
 
-		frame.addMouseMotionListener(new MouseMotionAdapter()
+		addMouseMotionListener(new MouseMotionAdapter()
 		{
 			@Override
 			public void mouseDragged(MouseEvent e)
 			{
-				img.clear();
+				int selectedButton = toolBar.getSelectedButton();
 
-				for (int[] line : lines)
+				if(selectedButton == ToolBar.LINE_BUTTON)
 				{
-					liner.draw(img, line[0], line[1], line[2], line[3], 0xffff00);
+					img.clear();
+
+					int x = e.getX();
+					int y = e.getY();
+
+					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0, toolBar.getThickness());
+
+					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
+					{
+						alignLine(line);
+					}
+
+					liner.draw(img, line);
 				}
-
-				liner.draw(img, c1, r1, e.getX(), e.getY(), 0xffff00);
-
-				panel.repaint();
+				repaint();
 			}
 		});
 
-		frame.add(panel, BorderLayout.CENTER);
-		frame.pack();
-		frame.setVisible(true);
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("C"), "clearCanvas");
+		getActionMap().put("clearCanvas", new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				clearCanvas();
+			}
+		});
+		setFocusable(true);
 	}
 
-	public void start()
+	@Override
+	public void paintComponent(Graphics g)
+	{
+		super.paintComponent(g);
+
+		for (Shape shape : shapes)
+		{
+			shape.draw(img, liner);
+		}
+
+		img.present(g);
+	}
+
+	public void addPolygon()
+	{
+		if(polygon != null)
+		{
+			shapes.add(polygon);
+			polygon = null;
+		}
+	}
+
+	private void alignLine(Line line)
+	{
+		Point2D point1 = line.getPoint1();
+		Point2D point2 = line.getPoint2();
+
+		int c1 = point1.getX();
+		int r1 = point1.getY();
+		int c2 = point2.getX();
+		int r2 = point2.getY();
+
+		// Calculate the differences
+		int dc = c2 - c1;
+		int dr = r2 - r1;
+
+		// Threshold for determining diagonal vs horizontal/vertical
+		int threshold = 100;
+
+		if (Math.abs(dr) <= threshold)
+		{
+			//align to horizontal
+			r2 = r1;
+		}
+		else if (Math.abs(dc) <= threshold)
+		{
+			//align to vertical
+			c2 = c1;
+		}
+		else
+		{
+			//align to diagonal
+			int signX = Integer.signum(dc);
+			int signY = Integer.signum(dr);
+			int delta = Math.min(Math.abs(dc), Math.abs(dr));
+			c2 = c1 + signX * delta;
+			r2 = r1 + signY * delta;
+		}
+
+		line.setPoint2(new Point2D(c2, r2));
+	}
+
+	private void start()
 	{
 		img.clear();
-		panel.repaint();
+		repaint();
 	}
 
-	public static void main(String[] args)
+	private void clearCanvas()
 	{
-		SwingUtilities.invokeLater(() -> new Canvas(800, 800).start());
+		polygon = null;
+		img.clear();
+		shapes.clear();
+		repaint();
 	}
 }

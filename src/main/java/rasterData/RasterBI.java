@@ -55,7 +55,7 @@ public class RasterBI implements Raster
     public void clear()
     {
         Graphics gr = image.getGraphics();
-        gr.setColor(new Color(0x2f2f2f));
+        gr.setColor(new Color(16777215));
         gr.fillRect(0, 0, image.getWidth(), image.getHeight());
     }
 
