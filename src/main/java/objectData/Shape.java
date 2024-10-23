@@ -1,6 +1,7 @@
-package rasterOps;
+package objectData;
 
 import rasterData.RasterBI;
+import rasterOps.Liner;
 
 public interface Shape
 {

@@ -6,7 +6,7 @@ import objectData.Point2D;
 import objectData.Polygon;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
-import rasterOps.Shape;
+import objectData.Shape;
 import rasterOps.TrivialLiner;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -14,7 +14,6 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
-import javax.tools.Tool;
 
 public class Canvas extends JPanel
 {

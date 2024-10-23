@@ -2,7 +2,6 @@ package objectData;
 
 import rasterData.RasterBI;
 import rasterOps.Liner;
-import rasterOps.Shape;
 
 public class Line implements Shape
 {

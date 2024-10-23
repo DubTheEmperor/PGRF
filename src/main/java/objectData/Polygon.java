@@ -3,7 +3,6 @@ package objectData;
 import rasterData.RasterBI;
 import rasterOps.Liner;
 import rasterOps.Polygoner;
-import rasterOps.Shape;
 
 import java.util.ArrayList;
 import java.util.List;
