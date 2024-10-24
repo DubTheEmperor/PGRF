@@ -43,18 +43,7 @@ public class TrivialLiner implements Liner
 		// If the line is more horizontal (step along x-axis)
 		if (Math.abs(dc) > Math.abs(dr))
 		{
-			if (c1 > c2)
-			{
-				// Switch c1, c2
-				int temp = c1;
-				c1 = c2;
-				c2 = temp;
-				// Switch r1, r2
-				temp = r1;
-				r1 = r2;
-				r2 = temp;
-			}
-			for (int c = c1; c <= c2; c++)
+			for (int c = Math.min(c1, c2); c <= Math.max(c1, c2); c++)
 			{
 				int r = (int) (k * c + q);
 				for (int i = -thickness / 2; i <= thickness / 2; i++)
@@ -66,18 +55,7 @@ public class TrivialLiner implements Liner
 		}
 
 		// Handle more vertical lines (step along y-axis)
-		if (r1 > r2)
-		{
-			// Switch c1, c2
-			int temp = c1;
-			c1 = c2;
-			c2 = temp;
-			// Switch r1, r2
-			temp = r1;
-			r1 = r2;
-			r2 = temp;
-		}
-		for (int r = r1; r <= r2; r++)
+		for (int r = Math.min(r1, r2); r <= Math.max(r1, r2); r++)
 		{
 			int c = (int) ((r - q) / k);
 			for (int i = -thickness / 2; i <= thickness / 2; i++)
@@ -85,6 +63,46 @@ public class TrivialLiner implements Liner
 				raster.setColor(c + i, r, color);
 			}
 		}
+	}
+
+	public void alignLine(Line line)
+	{
+		Point2D point1 = line.getPoint1();
+		Point2D point2 = line.getPoint2();
+
+		int c1 = point1.getX();
+		int r1 = point1.getY();
+		int c2 = point2.getX();
+		int r2 = point2.getY();
+
+		// Calculate the differences
+		int dc = c2 - c1;
+		int dr = r2 - r1;
+
+		// Threshold for determining diagonal vs horizontal/vertical
+		int threshold = 100;
+
+		if (Math.abs(dr) <= threshold)
+		{
+			//align to horizontal
+			r2 = r1;
+		}
+		else if (Math.abs(dc) <= threshold)
+		{
+			//align to vertical
+			c2 = c1;
+		}
+		else
+		{
+			//align to diagonal
+			int signX = Integer.signum(dc);
+			int signY = Integer.signum(dr);
+			int delta = Math.min(Math.abs(dc), Math.abs(dr));
+			c2 = c1 + signX * delta;
+			r2 = r1 + signY * delta;
+		}
+
+		line.setPoint2(new Point2D(c2, r2));
 	}
 
 	@Override

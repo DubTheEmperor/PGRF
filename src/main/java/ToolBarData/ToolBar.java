@@ -86,7 +86,8 @@ public class ToolBar extends JPanel
 		if (line.isSelected())
 		{
 			return LINE_BUTTON;
-		} else if (polygon.isSelected())
+		}
+		else if (polygon.isSelected())
 		{
 			return POLYGON_BUTTON;
 		} else if (fill.isSelected())

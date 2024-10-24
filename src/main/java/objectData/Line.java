@@ -1,5 +1,6 @@
 package objectData;
 
+import rasterData.Raster;
 import rasterData.RasterBI;
 import rasterOps.Liner;
 
@@ -170,7 +171,7 @@ public class Line implements Shape
 	}
 
 	@Override
-	public void draw(RasterBI img, Liner liner)
+	public void draw(Raster img, Liner liner)
 	{
 		liner.draw(img, this);
 	}

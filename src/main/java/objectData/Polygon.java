@@ -1,5 +1,6 @@
 package objectData;
 
+import rasterData.Raster;
 import rasterData.RasterBI;
 import rasterOps.Liner;
 import rasterOps.Polygoner;
@@ -108,7 +109,7 @@ public class Polygon implements Shape
 	}
 
 	@Override
-	public void draw(RasterBI img, Liner liner)
+	public void draw(Raster img, Liner liner)
 	{
 		new Polygoner().draw(img, this, liner);
 	}
