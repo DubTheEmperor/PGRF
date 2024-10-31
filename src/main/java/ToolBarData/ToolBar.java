@@ -11,6 +11,7 @@ public class ToolBar extends JPanel
 {
 	private JToggleButton line;
 	private JToggleButton polygon;
+	private JToggleButton fill;
 	private CustomButtonGroup buttonGroup;
 	private JSpinner thicknessSpinner;
 	private JToggleButton currentlySelectedButton;
@@ -18,6 +19,7 @@ public class ToolBar extends JPanel
 
 	public static final int LINE_BUTTON = 0;
 	public static final int POLYGON_BUTTON = 1;
+	public static final int FILL_BUTTON = 2;
 
 	public ToolBar()
 	{
@@ -36,9 +38,15 @@ public class ToolBar extends JPanel
 		polygon.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
 		polygon.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
 
+		fill = new JToggleButton();
+		fill.setPreferredSize(buttonDimension);
+		fill.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
+		fill.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+
 		buttonGroup = new CustomButtonGroup();
 		buttonGroup.add(line);
 		buttonGroup.add(polygon);
+		buttonGroup.add(fill);
 
 		SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 10, 1);
 		thicknessSpinner = new JSpinner(spinnerModel);
@@ -56,12 +64,15 @@ public class ToolBar extends JPanel
 
 		line.addActionListener(e -> canvas.addPolygon());
 		polygon.addActionListener(e -> canvas.addPolygon());
+		fill.addActionListener(e -> canvas.addPolygon());
 
 		add(line);
 		add(polygon);
 		add(Box.createRigidArea(new Dimension(50, 0)));
 		add(thicknessLabel);
 		add(thicknessSpinner);
+		add(Box.createRigidArea(new Dimension(100, 0)));
+		add(fill);
 	}
 
 	@Override
@@ -78,6 +89,9 @@ public class ToolBar extends JPanel
 		} else if (polygon.isSelected())
 		{
 			return POLYGON_BUTTON;
+		} else if (fill.isSelected())
+		{
+			return FILL_BUTTON;
 		}
 		return -1;
 	}

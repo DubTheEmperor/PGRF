@@ -7,6 +7,7 @@ import objectData.Polygon;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
 import objectData.Shape;
+import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -18,6 +19,8 @@ import javax.swing.*;
 public class Canvas extends JPanel
 {
 	private RasterBI img;
+
+	private SeedFill4BG fill4BG;
 
 	private int currentX;
 	private int currentY;
@@ -39,6 +42,7 @@ public class Canvas extends JPanel
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
+		fill4BG = new SeedFill4BG();
 		shiftPressed = false;
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
@@ -58,7 +62,6 @@ public class Canvas extends JPanel
 			public void mousePressed(MouseEvent e)
 			{
 				int selectedButton = toolBar.getSelectedButton();
-
 				c1 = e.getX();
 				r1 = e.getY();
 
@@ -67,12 +70,16 @@ public class Canvas extends JPanel
 					addPolygon();
 				}
 
-				if(selectedButton == ToolBar.POLYGON_BUTTON)
+				if(selectedButton == ToolBar.FILL_BUTTON)
+				{
+					fill4BG.fill(img, c1, r1, 0xffffff, 0x000000);
+				}
+				else if(selectedButton == ToolBar.POLYGON_BUTTON)
 				{
 					img.clear();
 
 					if(polygon == null)
-						polygon = new Polygon(0, toolBar.getThickness());
+						polygon = new Polygon(0x000000, toolBar.getThickness());
 
 					polygon.addPoint(new Point2D(c1, r1));
 					polygoner.draw(img, polygon, liner);
@@ -106,7 +113,7 @@ public class Canvas extends JPanel
 					int x = e.getX();
 					int y = e.getY();
 
-					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0, toolBar.getThickness());
+					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0x000000, toolBar.getThickness());
 
 					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
 					{
