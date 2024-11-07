@@ -19,6 +19,13 @@ public class Polygon implements Shape
 		this.thickness = thickness;
 	}
 
+	public Polygon()
+	{
+		this.points = new ArrayList<>();
+		this.color = 0x000000;
+		this.thickness = 1;
+	}
+
 	public void addPoint(Point2D point)
 	{
 		points.add(point);
@@ -48,6 +55,22 @@ public class Polygon implements Shape
 	{
 		return points.size();
 	}
+
+	public List<Line> toLines() {
+		List<Line> lines = new ArrayList<>();
+		if (points.size() < 2) {
+			return lines;
+		}
+
+		for (int i = 0; i < points.size() - 1; i++) {
+			lines.add(new Line(points.get(i), points.get(i + 1), color, thickness));
+		}
+
+		lines.add(new Line(points.getLast(), points.getFirst(), color, thickness));
+
+		return lines;
+	}
+
 
 	@Override
 	public void draw(RasterBI img, Liner liner)

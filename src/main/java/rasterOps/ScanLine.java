@@ -9,11 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class ScanLine
 {
-    void draw(Raster raster, Polygon polygon, Liner liner, Polygoner polygoner, int fillColor, int borderColor)
+    public void draw(Raster raster, Polygon polygon, Liner liner, Polygoner polygoner, int fillColor, int borderColor)
     {
         List<Integer> yList = new ArrayList<>();
         for (int i = 0; i < polygon.size(); i++)

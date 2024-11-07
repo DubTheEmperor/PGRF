@@ -7,6 +7,7 @@ import objectData.Polygon;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
 import objectData.Shape;
+import rasterOps.ScanLine;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
 import java.awt.Dimension;
