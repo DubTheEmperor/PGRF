@@ -71,6 +71,41 @@ public class Polygon implements Shape
 		return lines;
 	}
 
+	public Polygon translate(int dx, int dy)
+	{
+		Polygon result = new Polygon(color, thickness);
+
+		for (int i = 0; i < this.size(); i++)
+		{
+			result.addPoint(this.getPoint(i).translate(dx, dy));
+		}
+
+		return result;
+	}
+
+	public Polygon scale(int k)
+	{
+		Polygon result = new Polygon(color, thickness);
+
+		for (int i = 0; i < this.size(); i++)
+		{
+			result.addPoint(this.getPoint(i).scale(k));
+		}
+
+		return result;
+	}
+
+	public Polygon rotate(int alpha)
+	{
+		Polygon result = new Polygon(color, thickness);
+
+		for (int i = 0; i < this.size(); i++)
+		{
+			result.addPoint(this.getPoint(i).rotate(alpha));
+		}
+
+		return result;
+	}
 
 	@Override
 	public void draw(RasterBI img, Liner liner)
