@@ -7,7 +7,7 @@ import java.util.*;
 
 public class SeedFill4BG
 {
-	    public static List<Point2D> fill(Raster raster, int c, int r, int bgColor, int fillColor)
+    public static List<Point2D> fill(Raster raster, int c, int r, int bgColor, int fillColor)
     {
         List<Point2D> filledPoints = new ArrayList<>();
         fillRecursive(raster, c, r, bgColor, fillColor, filledPoints);
@@ -25,7 +25,7 @@ public class SeedFill4BG
         if ((color & 0xffffff) == (bgColor & 0xffffff))
         {
             raster.setColor(c, r, fillColor);
-            filledPoints.add(new Point2D(c, r)); // Save the filled point
+            filledPoints.add(new Point2D(c, r));
             fillRecursive(raster, c + 1, r, bgColor, fillColor, filledPoints);
             fillRecursive(raster, c - 1, r, bgColor, fillColor, filledPoints);
             fillRecursive(raster, c, r + 1, bgColor, fillColor, filledPoints);

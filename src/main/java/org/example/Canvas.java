@@ -38,6 +38,8 @@ public class Canvas extends JPanel
 
 	private List<Shape> shapes;
 
+	private Shape currentShape;
+
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
 		shiftPressed = false;
@@ -76,10 +78,11 @@ public class Canvas extends JPanel
 						int backgroundColor = maybeBackgroundColor.get();
 						int fillColor = 0x000000;
 						List<Point2D> filledPoints = SeedFill4BG.fill(img, c1, r1, backgroundColor, fillColor);
-						shapes.add(new FilledArea(filledPoints, fillColor));
+						FilledArea filledArea = new FilledArea(filledPoints, fillColor);
+						currentShape = filledArea;
+						shapes.add(filledArea);
 					}
-				}
-				else if (selectedButton == ToolBar.POLYGON_BUTTON)
+				} else if (selectedButton == ToolBar.POLYGON_BUTTON)
 				{
 					img.clear();
 
@@ -87,6 +90,7 @@ public class Canvas extends JPanel
 						polygon = new Polygon(0x000000, toolBar.getThickness());
 
 					polygon.addPoint(new Point2D(c1, r1));
+					currentShape = polygon; // Set the current shape
 					polygoner.draw(img, polygon, liner);
 				}
 				repaint();
@@ -95,11 +99,13 @@ public class Canvas extends JPanel
 			@Override
 			public void mouseReleased(MouseEvent e)
 			{
+
 				int selectedButton = toolBar.getSelectedButton();
 
 				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
 					shapes.add(line);
+					currentShape = null;
 				}
 			}
 		});
@@ -119,6 +125,7 @@ public class Canvas extends JPanel
 					int y = e.getY();
 
 					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0x000000, toolBar.getThickness());
+					currentShape = line; // Set the current shape
 
 					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
 					{
@@ -153,6 +160,11 @@ public class Canvas extends JPanel
 			shape.draw(img, liner);
 		}
 
+		if (currentShape != null)
+		{
+			currentShape.draw(img, liner);
+		}
+
 		img.present(g);
 	}
 
@@ -175,11 +187,9 @@ public class Canvas extends JPanel
 		int c2 = point2.getX();
 		int r2 = point2.getY();
 
-		// Calculate the differences
 		int dc = c2 - c1;
 		int dr = r2 - r1;
 
-		// Threshold for determining diagonal vs horizontal/vertical
 		int threshold = 100;
 
 		if (Math.abs(dr) <= threshold)
@@ -212,6 +222,7 @@ public class Canvas extends JPanel
 	private void clearCanvas()
 	{
 		polygon = null;
+		currentShape = null;
 		img.clear();
 		shapes.clear();
 		repaint();
