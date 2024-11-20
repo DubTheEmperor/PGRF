@@ -1,27 +1,24 @@
 package org.example;
 
 import ToolBarData.ToolBar;
-import objectData.Line;
-import objectData.Point2D;
-import objectData.Polygon;
+import objectData.*;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
-import objectData.Shape;
 import rasterOps.ScanLine;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
+
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.*;
 
 public class Canvas extends JPanel
 {
 	private RasterBI img;
-
-	private SeedFill4BG fill4BG;
 
 	private int currentX;
 	private int currentY;
@@ -43,7 +40,6 @@ public class Canvas extends JPanel
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
-		fill4BG = new SeedFill4BG();
 		shiftPressed = false;
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
@@ -66,20 +62,28 @@ public class Canvas extends JPanel
 				c1 = e.getX();
 				r1 = e.getY();
 
-				if(selectedButton != ToolBar.POLYGON_BUTTON)
+				if (selectedButton != ToolBar.POLYGON_BUTTON)
 				{
 					addPolygon();
 				}
 
-				if(selectedButton == ToolBar.FILL_BUTTON)
+				if (selectedButton == ToolBar.FILL_BUTTON)
 				{
-					fill4BG.fill(img, c1, r1, 0xffffff, 0x000000);
+					Optional<Integer> maybeBackgroundColor = img.getColor(c1, r1);
+
+					if (maybeBackgroundColor.isPresent())
+					{
+						int backgroundColor = maybeBackgroundColor.get();
+						int fillColor = 0x000000;
+						List<Point2D> filledPoints = SeedFill4BG.fill(img, c1, r1, backgroundColor, fillColor);
+						shapes.add(new FilledArea(filledPoints, fillColor));
+					}
 				}
-				else if(selectedButton == ToolBar.POLYGON_BUTTON)
+				else if (selectedButton == ToolBar.POLYGON_BUTTON)
 				{
 					img.clear();
 
-					if(polygon == null)
+					if (polygon == null)
 						polygon = new Polygon(0x000000, toolBar.getThickness());
 
 					polygon.addPoint(new Point2D(c1, r1));
@@ -93,7 +97,7 @@ public class Canvas extends JPanel
 			{
 				int selectedButton = toolBar.getSelectedButton();
 
-				if(selectedButton == ToolBar.LINE_BUTTON)
+				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
 					shapes.add(line);
 				}
@@ -107,7 +111,7 @@ public class Canvas extends JPanel
 			{
 				int selectedButton = toolBar.getSelectedButton();
 
-				if(selectedButton == ToolBar.LINE_BUTTON)
+				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
 					img.clear();
 
@@ -128,7 +132,8 @@ public class Canvas extends JPanel
 		});
 
 		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("C"), "clearCanvas");
-		getActionMap().put("clearCanvas", new AbstractAction() {
+		getActionMap().put("clearCanvas", new AbstractAction()
+		{
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
@@ -153,7 +158,7 @@ public class Canvas extends JPanel
 
 	public void addPolygon()
 	{
-		if(polygon != null)
+		if (polygon != null)
 		{
 			shapes.add(polygon);
 			polygon = null;
@@ -181,13 +186,11 @@ public class Canvas extends JPanel
 		{
 			//align to horizontal
 			r2 = r1;
-		}
-		else if (Math.abs(dc) <= threshold)
+		} else if (Math.abs(dc) <= threshold)
 		{
 			//align to vertical
 			c2 = c1;
-		}
-		else
+		} else
 		{
 			//align to diagonal
 			int signX = Integer.signum(dc);

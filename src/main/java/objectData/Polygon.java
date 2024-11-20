@@ -11,13 +11,14 @@ import java.util.List;
 public class Polygon implements Shape
 {
 	private List<Point2D> points;
-	private int color, thickness;
+	private int color, thickness, backgroundColor;
 
 	public Polygon(int color, int thickness)
 	{
 		this.points = new ArrayList<>();
 		this.color = color;
 		this.thickness = thickness;
+		this.backgroundColor = 0xff00ff;
 	}
 
 	public Polygon()
@@ -40,6 +41,11 @@ public class Polygon implements Shape
 	public int getColor()
 	{
 		return color;
+	}
+
+	public int getBackgroundColor()
+	{
+		return backgroundColor;
 	}
 
 	public int getThickness()

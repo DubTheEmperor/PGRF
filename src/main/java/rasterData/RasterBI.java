@@ -7,6 +7,7 @@ import java.util.Optional;
 public class RasterBI implements Raster
 {
     private final BufferedImage image;
+    private final int backgroundColor = 0xffffff;
 
     public RasterBI(int width, int height)
     {
@@ -52,10 +53,15 @@ public class RasterBI implements Raster
         gr.fillRect(0, 0, image.getWidth(), image.getHeight());
     }
 
+    public int getBackgroundColor()
+    {
+        return backgroundColor;
+    }
+
     public void clear()
     {
         Graphics gr = image.getGraphics();
-        gr.setColor(new Color(16777215));
+        gr.setColor(new Color(backgroundColor));
         gr.fillRect(0, 0, image.getWidth(), image.getHeight());
     }
 

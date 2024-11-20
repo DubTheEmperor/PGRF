@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class ScanLine
 {
-    public void draw(Raster raster, Polygon polygon, Liner liner, Polygoner polygoner, int fillColor, int borderColor)
+    public void draw(Raster raster, Polygon polygon, int fillColor)
     {
         List<Integer> yList = new ArrayList<>();
         for (int i = 0; i < polygon.size(); i++)
@@ -24,33 +24,48 @@ public class ScanLine
         int yMax = Collections.max(yList);
 
         for (int y = yMin; y <= yMax; y++) {
-            List<Integer> xIntersections = new ArrayList<>();
+            // Find intersections of the polygon edges with the current scanline
+            List<Integer> intersections = findIntersections(polygon, y);
 
-            // Find intersections of the scanline with the edges of the polygon
-            for (int i = 0; i < polygon.size(); i++) {
-                Point2D p1 = polygon.getPoint(i);
-                Point2D p2 = polygon.getPoint((i + 1) % polygon.size());
-                Line edge = new Line(p1, p2, borderColor);
+            // Sort the intersections to process pairs
+            Collections.sort(intersections);
 
-                Optional<Float> xOpt = edge.yIntercept(y);
-                xOpt.ifPresent(x -> xIntersections.add(Math.round(x)));
-            }
+            // Fill pixels between pairs of intersections
+            for (int i = 0; i < intersections.size(); i += 2) {
+                int startX = intersections.get(i);
+                int endX = intersections.get(i + 1);
 
-            // Sort the intersection points
-            Collections.sort(xIntersections);
-
-            // Fill between pairs of intersections
-            for (int i = 0; i < xIntersections.size(); i += 2) {
-                if (i + 1 < xIntersections.size()) {
-                    int xStart = xIntersections.get(i);
-                    int xEnd = xIntersections.get(i + 1);
-
-                    // Fill pixels between xStart and xEnd with the fill color
-                    for (int x = xStart; x <= xEnd; x++) {
-                        raster.setColor(x, y, fillColor);
-                    }
+                for (int x = startX; x < endX; x++) {
+                    raster.setColor(x, y, fillColor);
                 }
             }
         }
+    }
+
+    private List<Integer> findIntersections(Polygon polygon, int scanlineY) {
+        List<Integer> intersections = new ArrayList<>();
+
+        // Get all lines that form the edges of the polygon
+        List<Line> lines = polygon.toLines();
+
+        for (Line line : lines) {
+            // Extract points from the line
+            Point2D start = line.getPoint1();
+            Point2D end = line.getPoint2();
+
+            int x1 = start.getX();
+            int y1 = start.getY();
+            int x2 = end.getX();
+            int y2 = end.getY();
+
+            // Check if the line intersects the current scanline
+            if ((y1 <= scanlineY && y2 > scanlineY) || (y2 <= scanlineY && y1 > scanlineY)) {
+                // Calculate the X coordinate of the intersection point
+                int intersectX = x1 + (scanlineY - y1) * (x2 - x1) / (y2 - y1);
+                intersections.add(intersectX);
+            }
+        }
+
+        return intersections;
     }
 }

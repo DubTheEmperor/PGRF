@@ -14,5 +14,8 @@ public class Polygoner
 
 			liner.draw(raster, p1, p2, polygon.getColor(), polygon.getThickness());
 		}
+
+		ScanLine scanLine = new ScanLine();
+		scanLine.draw(raster, polygon, polygon.getBackgroundColor());
 	}
 }
