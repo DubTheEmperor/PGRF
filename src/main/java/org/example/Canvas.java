@@ -7,6 +7,7 @@ import rasterOps.Polygoner;
 import rasterOps.ScanLine;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
+import transfroms.Mat3Transl2D;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -22,8 +23,6 @@ public class Canvas extends JPanel
 
 	private int currentX;
 	private int currentY;
-
-	private boolean shiftPressed;
 
 	private TrivialLiner liner;
 	private Polygoner polygoner;
@@ -42,7 +41,6 @@ public class Canvas extends JPanel
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
-		shiftPressed = false;
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
 		polygoner = new Polygoner();
@@ -129,7 +127,7 @@ public class Canvas extends JPanel
 
 					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
 					{
-						alignLine(line);
+						liner.alignLine(line);
 					}
 
 					liner.draw(img, line);
@@ -175,42 +173,6 @@ public class Canvas extends JPanel
 			shapes.add(polygon);
 			polygon = null;
 		}
-	}
-
-	private void alignLine(Line line)
-	{
-		Point2D point1 = line.getPoint1();
-		Point2D point2 = line.getPoint2();
-
-		int c1 = point1.getX();
-		int r1 = point1.getY();
-		int c2 = point2.getX();
-		int r2 = point2.getY();
-
-		int dc = c2 - c1;
-		int dr = r2 - r1;
-
-		int threshold = 100;
-
-		if (Math.abs(dr) <= threshold)
-		{
-			//align to horizontal
-			r2 = r1;
-		} else if (Math.abs(dc) <= threshold)
-		{
-			//align to vertical
-			c2 = c1;
-		} else
-		{
-			//align to diagonal
-			int signX = Integer.signum(dc);
-			int signY = Integer.signum(dr);
-			int delta = Math.min(Math.abs(dc), Math.abs(dr));
-			c2 = c1 + signX * delta;
-			r2 = r1 + signY * delta;
-		}
-
-		line.setPoint2(new Point2D(c2, r2));
 	}
 
 	private void start()
