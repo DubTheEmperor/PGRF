@@ -27,8 +27,6 @@ public class SutherlandHodgman
 			result.addPoint(point);
 		}
 
-		System.out.println(result.size());
-
 		return result;
 	}
 

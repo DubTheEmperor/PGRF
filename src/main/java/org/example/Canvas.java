@@ -183,7 +183,7 @@ public class Canvas extends JPanel
 		});
 		setFocusable(true);
 
-		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("B"), "cutPolygons");
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ENTER"), "cutPolygons");
 		getActionMap().put("cutPolygons", new AbstractAction()
 		{
 			@Override
@@ -201,7 +201,8 @@ public class Canvas extends JPanel
 						}
 					}
 				}
-
+				cuttingPolygon = null;
+				img.clear();
 				repaint();
 			}
 		});

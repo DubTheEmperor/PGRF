@@ -42,18 +42,18 @@ public class ToolBar extends JPanel
 
 		fill = new JToggleButton();
 		fill.setPreferredSize(buttonDimension);
-		fill.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
-		fill.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+		fill.setSelectedIcon(new ImageIcon("src/main/icons/fillIconSelected.jpg"));
+		fill.setIcon(new ImageIcon("src/main/icons/fillIcon.jpg"));
 
 		regularPentagon = new JToggleButton();
 		regularPentagon.setPreferredSize(buttonDimension);
-		regularPentagon.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
-		regularPentagon.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+		regularPentagon.setSelectedIcon(new ImageIcon("src/main/icons/pentagonIconSelected.jpg"));
+		regularPentagon.setIcon(new ImageIcon("src/main/icons/pentagonIcon.jpg"));
 
 		cut = new JToggleButton();
 		cut.setPreferredSize(buttonDimension);
-		cut.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
-		cut.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+		cut.setSelectedIcon(new ImageIcon("src/main/icons/cutIconSelected.jpg"));
+		cut.setIcon(new ImageIcon("src/main/icons/cutIcon.jpg"));
 
 		buttonGroup = new CustomButtonGroup();
 		buttonGroup.add(line);
