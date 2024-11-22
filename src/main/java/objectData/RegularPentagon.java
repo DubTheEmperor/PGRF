@@ -1,5 +1,6 @@
 package objectData;
 
+import fillPatterns.PatternFill;
 import rasterData.Raster;
 import rasterOps.Liner;
 import java.util.ArrayList;
@@ -10,9 +11,9 @@ public class RegularPentagon extends Polygon
 	private Point2D center;
 	private int radius;
 
-	public RegularPentagon(Point2D center, int radius, int color, int thickness, boolean isFilled)
+	public RegularPentagon(Point2D center, int radius, int color, int thickness, boolean isFilled, PatternFill fillPattern)
 	{
-		super(color, thickness, isFilled);
+		super(color, thickness, isFilled, fillPattern);
 		this.center = center;
 		this.radius = radius;
 		generateVertices();

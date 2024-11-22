@@ -21,7 +21,7 @@ public class SutherlandHodgman
 			subjectPoints = clipAgainstEdge(subjectPoints, clipStart, clipEnd);
 		}
 
-		Polygon result = new Polygon(subjectPolygon.getColor(), subjectPolygon.getThickness(), subjectPolygon.isFilled());
+		Polygon result = new Polygon(subjectPolygon.getColor(), subjectPolygon.getThickness(), subjectPolygon.isFilled(), subjectPolygon.getFillPattern());
 		for (Point2D point : subjectPoints)
 		{
 			result.addPoint(point);
@@ -63,9 +63,15 @@ public class SutherlandHodgman
 
 	private static boolean isInside(Point2D point, Point2D edgeStart, Point2D edgeEnd)
 	{
-		int dx = edgeEnd.getX() - edgeStart.getX();
-		int dy = edgeEnd.getY() - edgeStart.getY();
-		return (dx * (point.getY() - edgeStart.getY()) - dy * (point.getX() - edgeStart.getX())) >= 0;
+		double dx = edgeEnd.getX() - edgeStart.getX();
+		double dy = edgeEnd.getY() - edgeStart.getY();
+
+		// Calculate cross product
+		double crossProduct = dx * (point.getY() - edgeStart.getY()) - dy * (point.getX() - edgeStart.getX());
+
+		// Use a small tolerance to handle edge cases
+		double epsilon = 1e-9; // Tolerance for floating-point comparisons
+		return crossProduct >= -epsilon;
 	}
 
 	private static Point2D intersection(Point2D start1, Point2D end1, Point2D start2, Point2D end2)
@@ -82,6 +88,7 @@ public class SutherlandHodgman
 
 		if (determinant == 0)
 		{
+			System.out.println("nigga");
 			return null;
 		}
 

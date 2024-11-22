@@ -18,7 +18,7 @@ public class Polygoner
 		if(isFilled)
 		{
 			ScanLine scanLine = new ScanLine();
-			scanLine.draw(raster, polygon, polygon.getBackgroundColor());
+			scanLine.draw(raster, polygon, polygon.getFillPattern());
 		}
 	}
 }

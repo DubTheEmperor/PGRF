@@ -1,5 +1,6 @@
 package rasterOps;
 
+import fillPatterns.PatternFill;
 import objectData.Line;
 import objectData.Point2D;
 import objectData.Polygon;
@@ -8,11 +9,10 @@ import rasterData.Raster;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 public class ScanLine
 {
-	public void draw(Raster raster, Polygon polygon, int fillColor)
+	public void draw(Raster raster, Polygon polygon, PatternFill patternFill)
 	{
 		List<Integer> yList = new ArrayList<>();
 		for (int i = 0; i < polygon.size(); i++)
@@ -39,7 +39,9 @@ public class ScanLine
 
 				for (int x = startX; x < endX; x++)
 				{
-					raster.setColor(x, y, fillColor);
+					// Use the pattern to determine the color
+					int color = patternFill.getColorAt(x, y);
+					raster.setColor(x, y, color);
 				}
 			}
 		}

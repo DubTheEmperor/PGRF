@@ -1,5 +1,7 @@
 package org.example;
 
+import fillPatterns.CheckerboardPattern;
+import fillPatterns.SolidPattern;
 import objectOps.SutherlandHodgman;
 import toolBarData.ToolBar;
 import objectData.*;
@@ -93,7 +95,7 @@ public class Canvas extends JPanel
 					img.clear();
 
 					if (polygon == null)
-						polygon = new Polygon(0x000000, toolBar.getThickness(), true);
+						polygon = new Polygon(0x000000, toolBar.getThickness(), true, new SolidPattern(0xff00ff));
 
 					polygon.addPoint(new Point2D(c1, r1));
 					currentShape = polygon;
@@ -104,7 +106,7 @@ public class Canvas extends JPanel
 					img.clear();
 
 					if (cuttingPolygon == null)
-						cuttingPolygon = new Polygon(0xff0000, 1, false);
+						cuttingPolygon = new Polygon(0xff0000, 1, false, new SolidPattern(0xff00ff));
 
 					cuttingPolygon.addPoint(new Point2D(c1, r1));
 					currentShape = cuttingPolygon;
@@ -161,7 +163,7 @@ public class Canvas extends JPanel
 					Point2D center = new Point2D(c1, r1);
 					Point2D secondPoint = new Point2D(x, y);
 
-					regularPentagon = new RegularPentagon(center, (int) RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness(), true);
+					regularPentagon = new RegularPentagon(center, (int) RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness(), true, new CheckerboardPattern(0xff00ff, 10));
 					currentShape = regularPentagon;
 
 					polygoner.draw(img, regularPentagon, liner, regularPentagon.isFilled());

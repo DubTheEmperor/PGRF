@@ -1,5 +1,8 @@
 package objectData;
 
+import fillPatterns.CheckerboardPattern;
+import fillPatterns.PatternFill;
+import fillPatterns.SolidPattern;
 import rasterData.Raster;
 import rasterOps.Liner;
 import rasterOps.Polygoner;
@@ -13,17 +16,22 @@ public class Polygon implements Shape
 	private int color, thickness;
 	private int backgroundColor = 0xff00ff;
 	private boolean isFilled;
+	private PatternFill fillPattern;
 
-	public Polygon(int color, int thickness, boolean isFilled)
+	public Polygon(int color, int thickness, boolean isFilled, PatternFill fillPattern)
 	{
+		this.backgroundColor = fillPattern.getColor();
+		this.fillPattern = fillPattern;
 		this.points = new ArrayList<>();
 		this.color = color;
 		this.thickness = thickness;
 		this.isFilled = isFilled;
 	}
 
-	public Polygon(int color, int thickness, boolean isFilled, List<Point2D> points)
+	public Polygon(int color, int thickness, boolean isFilled, PatternFill fillPattern, List<Point2D> points)
 	{
+		this.backgroundColor = fillPattern.getColor();
+		this.fillPattern = fillPattern;
 		this.points = points;
 		this.color = color;
 		this.thickness = thickness;
@@ -32,10 +40,16 @@ public class Polygon implements Shape
 
 	public Polygon()
 	{
+		this.fillPattern = new SolidPattern(backgroundColor);
 		this.points = new ArrayList<>();
 		this.color = 0x000000;
 		this.thickness = 1;
 		this.isFilled = false;
+	}
+
+	public PatternFill getFillPattern()
+	{
+		return fillPattern;
 	}
 
 	public boolean isFilled()
@@ -103,7 +117,7 @@ public class Polygon implements Shape
 
 	public Polygon translate(int dx, int dy)
 	{
-		Polygon result = new Polygon(color, thickness, isFilled);
+		Polygon result = new Polygon(color, thickness, isFilled, fillPattern);
 
 		for (int i = 0; i < this.size(); i++)
 		{
@@ -115,7 +129,7 @@ public class Polygon implements Shape
 
 	public Polygon scale(int k)
 	{
-		Polygon result = new Polygon(color, thickness, isFilled);
+		Polygon result = new Polygon(color, thickness, isFilled, fillPattern);
 
 		for (int i = 0; i < this.size(); i++)
 		{
@@ -127,7 +141,7 @@ public class Polygon implements Shape
 
 	public Polygon rotate(int alpha)
 	{
-		Polygon result = new Polygon(color, thickness, isFilled);
+		Polygon result = new Polygon(color, thickness, isFilled, fillPattern);
 
 		for (int i = 0; i < this.size(); i++)
 		{
