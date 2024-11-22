@@ -1,4 +1,4 @@
-package objectData;
+package objectData3D;
 
 import transfroms.Mat4;
 import transfroms.Point3D;

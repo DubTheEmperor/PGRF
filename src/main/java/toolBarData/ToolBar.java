@@ -1,25 +1,25 @@
-package ToolBarData;
+package toolBarData;
 
 import org.example.Canvas;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class ToolBar extends JPanel
 {
 	private JToggleButton line;
 	private JToggleButton polygon;
 	private JToggleButton fill;
+	private JToggleButton regularPentagon;
 	private CustomButtonGroup buttonGroup;
 	private JSpinner thicknessSpinner;
-	private JToggleButton currentlySelectedButton;
 	private Canvas canvas;
 
+	public static final int NONE = -1;
 	public static final int LINE_BUTTON = 0;
 	public static final int POLYGON_BUTTON = 1;
 	public static final int FILL_BUTTON = 2;
+	public static final int REGULAR_PENTAGON_BUTTON = 3;
 
 	public ToolBar()
 	{
@@ -43,10 +43,16 @@ public class ToolBar extends JPanel
 		fill.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
 		fill.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
 
+		regularPentagon = new JToggleButton();
+		regularPentagon.setPreferredSize(buttonDimension);
+		regularPentagon.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
+		regularPentagon.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+
 		buttonGroup = new CustomButtonGroup();
 		buttonGroup.add(line);
 		buttonGroup.add(polygon);
 		buttonGroup.add(fill);
+		buttonGroup.add(regularPentagon);
 
 		SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 10, 1);
 		thicknessSpinner = new JSpinner(spinnerModel);
@@ -65,9 +71,11 @@ public class ToolBar extends JPanel
 		line.addActionListener(e -> canvas.addPolygon());
 		polygon.addActionListener(e -> canvas.addPolygon());
 		fill.addActionListener(e -> canvas.addPolygon());
+		regularPentagon.addActionListener(e -> canvas.addPolygon());
 
 		add(line);
 		add(polygon);
+		add(regularPentagon);
 		add(Box.createRigidArea(new Dimension(50, 0)));
 		add(thicknessLabel);
 		add(thicknessSpinner);
@@ -90,11 +98,17 @@ public class ToolBar extends JPanel
 		else if (polygon.isSelected())
 		{
 			return POLYGON_BUTTON;
-		} else if (fill.isSelected())
+		}
+		else if (fill.isSelected())
 		{
 			return FILL_BUTTON;
 		}
-		return -1;
+		else if (regularPentagon.isSelected())
+		{
+			return REGULAR_PENTAGON_BUTTON;
+		}
+		else
+			return NONE;
 	}
 
 	public int getThickness()
@@ -102,8 +116,8 @@ public class ToolBar extends JPanel
 		return (int) thicknessSpinner.getValue();
 	}
 
-	 public void setCanvas(Canvas canvas)
-	 {
-		 this.canvas = canvas;
-	 }
+	public void setCanvas(Canvas canvas)
+	{
+		this.canvas = canvas;
+	}
 }

@@ -1,18 +1,15 @@
 package objectData;
 
 import rasterData.Raster;
-import rasterData.RasterBI;
 import rasterOps.Liner;
 import rasterOps.Polygoner;
-import transfroms.Mat3;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 public class Polygon implements Shape
 {
-	private List<Point2D> points;
+	protected List<Point2D> points;
 	private int color, thickness, backgroundColor;
 
 	public Polygon(int color, int thickness)
@@ -65,13 +62,16 @@ public class Polygon implements Shape
 		return points.size();
 	}
 
-	public List<Line> toLines() {
+	public List<Line> toLines()
+	{
 		List<Line> lines = new ArrayList<>();
-		if (points.size() < 2) {
+		if (points.size() < 2)
+		{
 			return lines;
 		}
 
-		for (int i = 0; i < points.size() - 1; i++) {
+		for (int i = 0; i < points.size() - 1; i++)
+		{
 			lines.add(new Line(points.get(i), points.get(i + 1), color, thickness));
 		}
 

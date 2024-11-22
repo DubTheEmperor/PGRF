@@ -1,6 +1,6 @@
 package org.example;
 
-import ToolBarData.ToolBar;
+import toolBarData.ToolBar;
 
 import javax.swing.*;
 import java.awt.*;

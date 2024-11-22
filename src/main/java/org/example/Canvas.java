@@ -1,13 +1,11 @@
 package org.example;
 
-import ToolBarData.ToolBar;
+import toolBarData.ToolBar;
 import objectData.*;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
-import rasterOps.ScanLine;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
-import transfroms.Mat3Transl2D;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -34,6 +32,7 @@ public class Canvas extends JPanel
 
 	private Polygon polygon;
 	private Line line;
+	private RegularPentagon regularPentagon;
 
 	private List<Shape> shapes;
 
@@ -74,13 +73,14 @@ public class Canvas extends JPanel
 					if (maybeBackgroundColor.isPresent())
 					{
 						int backgroundColor = maybeBackgroundColor.get();
-						int fillColor = 0x000000;
+						int fillColor = 0x008000;
 						List<Point2D> filledPoints = SeedFill4BG.fill(img, c1, r1, backgroundColor, fillColor);
 						FilledArea filledArea = new FilledArea(filledPoints, fillColor);
 						currentShape = filledArea;
 						shapes.add(filledArea);
 					}
-				} else if (selectedButton == ToolBar.POLYGON_BUTTON)
+				}
+				else if (selectedButton == ToolBar.POLYGON_BUTTON)
 				{
 					img.clear();
 
@@ -100,10 +100,16 @@ public class Canvas extends JPanel
 
 				int selectedButton = toolBar.getSelectedButton();
 
+				if(selectedButton != ToolBar.NONE)
+					currentShape = null;
+
 				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
 					shapes.add(line);
-					currentShape = null;
+				}
+				else if(selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
+				{
+					shapes.add(regularPentagon);
 				}
 			}
 		});
@@ -114,16 +120,14 @@ public class Canvas extends JPanel
 			public void mouseDragged(MouseEvent e)
 			{
 				int selectedButton = toolBar.getSelectedButton();
+				int x = e.getX();
+				int y = e.getY();
+				img.clear();
 
 				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
-					img.clear();
-
-					int x = e.getX();
-					int y = e.getY();
-
 					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0x000000, toolBar.getThickness());
-					currentShape = line; // Set the current shape
+					currentShape = line;
 
 					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
 					{
@@ -131,6 +135,16 @@ public class Canvas extends JPanel
 					}
 
 					liner.draw(img, line);
+				}
+				else if(selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
+				{
+					Point2D center = new Point2D(c1, r1);
+					Point2D secondPoint = new Point2D(x, y);
+
+					regularPentagon = new RegularPentagon(center, (int)RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness());
+					currentShape = regularPentagon;
+
+					polygoner.draw(img, regularPentagon, liner);
 				}
 				repaint();
 			}

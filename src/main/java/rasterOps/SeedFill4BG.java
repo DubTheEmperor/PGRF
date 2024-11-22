@@ -7,29 +7,37 @@ import java.util.*;
 
 public class SeedFill4BG
 {
-    public static List<Point2D> fill(Raster raster, int c, int r, int bgColor, int fillColor)
-    {
-        List<Point2D> filledPoints = new ArrayList<>();
-        fillRecursive(raster, c, r, bgColor, fillColor, filledPoints);
-        return filledPoints;
-    }
+	public static List<Point2D> fill(Raster raster, int c, int r, int bgColor, int fillColor)
+	{
+		List<Point2D> filledPoints = new ArrayList<>();
 
-    private static void fillRecursive(Raster raster, int c, int r, int bgColor, int fillColor, List<Point2D> filledPoints)
-    {
-        Optional<Integer> maybeColor = raster.getColor(c, r);
+		if ((bgColor & 0xffffff) == (fillColor & 0xffffff))
+		{
+			return filledPoints;
+		}
 
-        if (maybeColor.isEmpty())
-            return;
+		Stack<Point2D> stack = new Stack<>();
+		stack.push(new Point2D(c, r));
 
-        int color = maybeColor.get();
-        if ((color & 0xffffff) == (bgColor & 0xffffff))
-        {
-            raster.setColor(c, r, fillColor);
-            filledPoints.add(new Point2D(c, r));
-            fillRecursive(raster, c + 1, r, bgColor, fillColor, filledPoints);
-            fillRecursive(raster, c - 1, r, bgColor, fillColor, filledPoints);
-            fillRecursive(raster, c, r + 1, bgColor, fillColor, filledPoints);
-            fillRecursive(raster, c, r - 1, bgColor, fillColor, filledPoints);
-        }
-    }
+		while (!stack.isEmpty())
+		{
+			Point2D point = stack.pop();
+			int x = point.getX();
+			int y = point.getY();
+
+			Optional<Integer> maybeColor = raster.getColor(x, y);
+			if (maybeColor.isPresent() && (maybeColor.get() & 0xffffff) == (bgColor & 0xffffff))
+			{
+				raster.setColor(x, y, fillColor);
+				filledPoints.add(point);
+
+				stack.push(new Point2D(x + 1, y));
+				stack.push(new Point2D(x - 1, y));
+				stack.push(new Point2D(x, y + 1));
+				stack.push(new Point2D(x, y - 1));
+			}
+		}
+
+		return filledPoints;
+	}
 }

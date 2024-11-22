@@ -1,4 +1,4 @@
-package ToolBarData;
+package toolBarData;
 
 import javax.swing.*;
 
