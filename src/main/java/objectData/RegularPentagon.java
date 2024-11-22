@@ -10,9 +10,9 @@ public class RegularPentagon extends Polygon
 	private Point2D center;
 	private int radius;
 
-	public RegularPentagon(Point2D center, int radius, int color, int thickness)
+	public RegularPentagon(Point2D center, int radius, int color, int thickness, boolean isFilled)
 	{
-		super(color, thickness);
+		super(color, thickness, isFilled);
 		this.center = center;
 		this.radius = radius;
 		generateVertices();
@@ -20,7 +20,7 @@ public class RegularPentagon extends Polygon
 
 	private void generateVertices()
 	{
-		points = new ArrayList<>(); // Clear existing points
+		points = new ArrayList<>();
 		double angleStep = 2 * Math.PI / 5;
 		for (int i = 0; i < 5; i++)
 		{

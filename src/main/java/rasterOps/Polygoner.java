@@ -6,7 +6,7 @@ import rasterData.Raster;
 
 public class Polygoner
 {
-	public void draw(Raster raster, Polygon polygon, Liner liner)
+	public void draw(Raster raster, Polygon polygon, Liner liner, boolean isFilled)
 	{
 		for (int i = 0; i < polygon.size(); i++) {
 			Point2D p1 = polygon.getPoint(i);
@@ -15,7 +15,10 @@ public class Polygoner
 			liner.draw(raster, p1, p2, polygon.getColor(), polygon.getThickness());
 		}
 
-		ScanLine scanLine = new ScanLine();
-		scanLine.draw(raster, polygon, polygon.getBackgroundColor());
+		if(isFilled)
+		{
+			ScanLine scanLine = new ScanLine();
+			scanLine.draw(raster, polygon, polygon.getBackgroundColor());
+		}
 	}
 }

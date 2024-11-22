@@ -102,77 +102,99 @@ public class Line implements Shape
 		return new Point2D(dx, dy);
 	}
 
-	public boolean isInside(Point2D point)
-	{
-		// Get the vector AB (from point1 to point2) using toVec()
-		Point2D vecAB = toVec();
-
-		// Calculate the normal vector to vecAB
-		int normalX = vecAB.getY();
-		int normalY = -vecAB.getX();
-
-		// Vector AP (from point1 to the given point)
-		int vx = point.getX() - point1.getX();
-		int vy = point.getY() - point1.getY();
-		Point2D vecAP = new Point2D(vx, vy);
-
-		// Compute the dot product between the normal vector and vecAP
-		int dotProduct = normalX * vecAP.getX() + normalY * vecAP.getY();
-
-		// If the dot product is zero, the point is on the line
-		if (dotProduct != 0) {
-			return false; // The point is not collinear with vecAB
-		}
-
-		// Perform the bounds check (same as before) to ensure point is within the line segment
-		int dotProductABAP = vecAB.getX() * vecAP.getX() + vecAB.getY() * vecAP.getY();
-		if (dotProductABAP < 0) {
-			return false; // Point is outside the segment on the "point1" side
-		}
-
-		// Check if the squared length of AB is at least as large as that of AP
-		int lengthSquaredAB = vecAB.getX() * vecAB.getX() + vecAB.getY() * vecAB.getY();
-		int lengthSquaredAP = vecAP.getX() * vecAP.getX() + vecAP.getY() * vecAP.getY();
-		return lengthSquaredAP <= lengthSquaredAB;
-	}
-
-
-	public Optional<Point2D> interception(Line other)
-	{
-		float x1 = point1.getX();
-		float y1 = point1.getY();
-		float x2 = point2.getX();
-		float y2 = point2.getY();
-
-		float x3 = other.getPoint1().getX();
-		float y3 = other.getPoint1().getY();
-		float x4 = other.getPoint2().getX();
-		float y4 = other.getPoint2().getY();
-
-		// Calculate the denominator to check if lines are parallel
-		float denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-		if (denominator == 0)
-		{
-			return Optional.empty(); // Lines are parallel
-		}
-
-		// Calculate intersection point
-		float px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denominator;
-		float py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denominator;
-
-		// Check if intersection is within both line segments
-		Point2D intersection = new Point2D(Math.round(px), Math.round(py));
-		if (this.isInside(intersection) && other.isInside(intersection))
-		{
-			return Optional.of(intersection);
-		}
-
-		return Optional.empty();
-	}
-
 	@Override
 	public void draw(Raster img, Liner liner)
 	{
 		liner.draw(img, this);
 	}
+//	public boolean isInside(Point2D point)
+//	{
+//		// Get the vector AB (from point1 to point2) using toVec()
+//		Point2D vecAB = toVec();
+//
+//		// Calculate the normal vector to vecAB
+//		int normalX = vecAB.getY();
+//		int normalY = -vecAB.getX();
+//
+//		// Vector AP (from point1 to the given point)
+//		int vx = point.getX() - point1.getX();
+//		int vy = point.getY() - point1.getY();
+//		Point2D vecAP = new Point2D(vx, vy);
+//
+//		// Compute the dot product between the normal vector and vecAP
+//		int dotProduct = normalX * vecAP.getX() + normalY * vecAP.getY();
+//
+//		// If the dot product is zero, the point is on the line
+//		if (dotProduct != 0) {
+//			return false; // The point is not collinear with vecAB
+//		}
+//
+//		// Perform the bounds check (same as before) to ensure point is within the line segment
+//		int dotProductABAP = vecAB.getX() * vecAP.getX() + vecAB.getY() * vecAP.getY();
+//		if (dotProductABAP < 0) {
+//			return false; // Point is outside the segment on the "point1" side
+//		}
+//
+//		// Check if the squared length of AB is at least as large as that of AP
+//		int lengthSquaredAB = vecAB.getX() * vecAB.getX() + vecAB.getY() * vecAB.getY();
+//		int lengthSquaredAP = vecAP.getX() * vecAP.getX() + vecAP.getY() * vecAP.getY();
+//		return lengthSquaredAP <= lengthSquaredAB;
+
+//	}
+//	public boolean isInside(Point2D point) {
+//		// Vector from point1 to point2 (edge direction)
+//		int vecX = point2.getX() - point1.getX();
+//		int vecY = point2.getY() - point1.getY();
+//
+//		// Normal vector (perpendicular to the edge)
+//		int normalX = -vecY; // Rotate vector 90 degrees clockwise
+//		int normalY = vecX;
+//
+//		// Vector from point1 to the given point
+//		int pointVecX = point.getX() - point1.getX();
+//		int pointVecY = point.getY() - point1.getY();
+//
+//		// Dot product between normal and point vector
+//		int dotProduct = normalX * pointVecX + normalY * pointVecY;
+//
+//		// For clockwise edges: dotProduct < 0 means inside
+//		// For counterclockwise edges: dotProduct > 0 means inside
+//		return dotProduct < 0; // Adjust if your edges are CCW
+
+//	}
+
+
+//	public Optional<Point2D> interception(Line other)
+//	{
+//		float x1 = point1.getX();
+//		float y1 = point1.getY();
+//		float x2 = point2.getX();
+//		float y2 = point2.getY();
+//
+//		float x3 = other.getPoint1().getX();
+//		float y3 = other.getPoint1().getY();
+//		float x4 = other.getPoint2().getX();
+//		float y4 = other.getPoint2().getY();
+//
+//		// Calculate the denominator to check if lines are parallel
+//		float denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+//		if (denominator == 0)
+//		{
+//			return Optional.empty(); // Lines are parallel
+//		}
+//
+//		// Calculate intersection point
+//		float px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denominator;
+//		float py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denominator;
+//
+//		// Check if intersection is within both line segments
+//		Point2D intersection = new Point2D(Math.round(px), Math.round(py));
+//		if (this.isInside(intersection) && other.isInside(intersection))
+//		{
+//			return Optional.of(intersection);
+//		}
+//
+//		return Optional.empty();
+
+//	}
 }

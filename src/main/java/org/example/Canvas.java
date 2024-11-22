@@ -1,5 +1,6 @@
 package org.example;
 
+import objectOps.SutherlandHodgman;
 import toolBarData.ToolBar;
 import objectData.*;
 import rasterData.RasterBI;
@@ -33,10 +34,13 @@ public class Canvas extends JPanel
 	private Polygon polygon;
 	private Line line;
 	private RegularPentagon regularPentagon;
+	private Polygon cuttingPolygon;
 
 	private List<Shape> shapes;
 
 	private Shape currentShape;
+
+	private SutherlandHodgman clipPolygon;
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
@@ -44,6 +48,7 @@ public class Canvas extends JPanel
 		liner = new TrivialLiner();
 		polygoner = new Polygoner();
 		shapes = new ArrayList<>();
+		clipPolygon = new SutherlandHodgman();
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
@@ -62,8 +67,11 @@ public class Canvas extends JPanel
 				r1 = e.getY();
 
 				if (selectedButton != ToolBar.POLYGON_BUTTON)
-				{
 					addPolygon();
+
+				if(selectedButton != ToolBar.CUT_BUTTON)
+				{
+					cuttingPolygon = null;
 				}
 
 				if (selectedButton == ToolBar.FILL_BUTTON)
@@ -85,11 +93,22 @@ public class Canvas extends JPanel
 					img.clear();
 
 					if (polygon == null)
-						polygon = new Polygon(0x000000, toolBar.getThickness());
+						polygon = new Polygon(0x000000, toolBar.getThickness(), true);
 
 					polygon.addPoint(new Point2D(c1, r1));
-					currentShape = polygon; // Set the current shape
-					polygoner.draw(img, polygon, liner);
+					currentShape = polygon;
+					polygoner.draw(img, polygon, liner, polygon.isFilled());
+				}
+				else if (selectedButton == ToolBar.CUT_BUTTON)
+				{
+					img.clear();
+
+					if (cuttingPolygon == null)
+						cuttingPolygon = new Polygon(0xff0000, 1, false);
+
+					cuttingPolygon.addPoint(new Point2D(c1, r1));
+					currentShape = cuttingPolygon;
+					polygoner.draw(img, cuttingPolygon, liner, cuttingPolygon.isFilled());
 				}
 				repaint();
 			}
@@ -100,16 +119,17 @@ public class Canvas extends JPanel
 
 				int selectedButton = toolBar.getSelectedButton();
 
-				if(selectedButton != ToolBar.NONE)
+				if (selectedButton != ToolBar.NONE)
 					currentShape = null;
 
 				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
 					shapes.add(line);
 				}
-				else if(selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
+				else if (selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
 				{
-					shapes.add(regularPentagon);
+					if(regularPentagon != null)
+						shapes.add(regularPentagon);
 				}
 			}
 		});
@@ -136,15 +156,15 @@ public class Canvas extends JPanel
 
 					liner.draw(img, line);
 				}
-				else if(selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
+				else if (selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
 				{
 					Point2D center = new Point2D(c1, r1);
 					Point2D secondPoint = new Point2D(x, y);
 
-					regularPentagon = new RegularPentagon(center, (int)RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness());
+					regularPentagon = new RegularPentagon(center, (int) RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness(), true);
 					currentShape = regularPentagon;
 
-					polygoner.draw(img, regularPentagon, liner);
+					polygoner.draw(img, regularPentagon, liner, regularPentagon.isFilled());
 				}
 				repaint();
 			}
@@ -157,6 +177,30 @@ public class Canvas extends JPanel
 			public void actionPerformed(ActionEvent e)
 			{
 				clearCanvas();
+			}
+		});
+		setFocusable(true);
+
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("B"), "cutPolygons");
+		getActionMap().put("cutPolygons", new AbstractAction()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				for (int i = 0; i < shapes.size(); i++) {
+					Shape shape = shapes.get(i);
+					if (shape instanceof Polygon) {
+						Polygon clipped = SutherlandHodgman.clipPolygon((Polygon) shape, cuttingPolygon);
+						if (clipped.size() > 2) {
+							System.out.println("Clipping succeeded for shape " + i);
+							shapes.set(i, clipped);
+						} else {
+							System.out.println("Clipping failed or resulted in invalid polygon for shape " + i);
+						}
+					}
+				}
+
+				repaint();
 			}
 		});
 		setFocusable(true);
@@ -197,6 +241,7 @@ public class Canvas extends JPanel
 
 	private void clearCanvas()
 	{
+		cuttingPolygon = null;
 		polygon = null;
 		currentShape = null;
 		img.clear();

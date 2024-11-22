@@ -1,8 +1,5 @@
 package objectData;
 
-import rasterData.Raster;
-import rasterOps.Liner;
-
 public class Point2D
 {
 	private int c, y;

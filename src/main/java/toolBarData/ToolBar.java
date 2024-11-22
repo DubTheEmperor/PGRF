@@ -11,6 +11,7 @@ public class ToolBar extends JPanel
 	private JToggleButton polygon;
 	private JToggleButton fill;
 	private JToggleButton regularPentagon;
+	private JToggleButton cut;
 	private CustomButtonGroup buttonGroup;
 	private JSpinner thicknessSpinner;
 	private Canvas canvas;
@@ -20,6 +21,7 @@ public class ToolBar extends JPanel
 	public static final int POLYGON_BUTTON = 1;
 	public static final int FILL_BUTTON = 2;
 	public static final int REGULAR_PENTAGON_BUTTON = 3;
+	public static final int CUT_BUTTON = 4;
 
 	public ToolBar()
 	{
@@ -48,11 +50,17 @@ public class ToolBar extends JPanel
 		regularPentagon.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
 		regularPentagon.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
 
+		cut = new JToggleButton();
+		cut.setPreferredSize(buttonDimension);
+		cut.setSelectedIcon(new ImageIcon("src/main/icons/polygonIconSelected.jpg"));
+		cut.setIcon(new ImageIcon("src/main/icons/polygonIcon.jpg"));
+
 		buttonGroup = new CustomButtonGroup();
 		buttonGroup.add(line);
 		buttonGroup.add(polygon);
 		buttonGroup.add(fill);
 		buttonGroup.add(regularPentagon);
+		buttonGroup.add(cut);
 
 		SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 1, 10, 1);
 		thicknessSpinner = new JSpinner(spinnerModel);
@@ -72,6 +80,7 @@ public class ToolBar extends JPanel
 		polygon.addActionListener(e -> canvas.addPolygon());
 		fill.addActionListener(e -> canvas.addPolygon());
 		regularPentagon.addActionListener(e -> canvas.addPolygon());
+		cut.addActionListener(e -> canvas.addPolygon());
 
 		add(line);
 		add(polygon);
@@ -81,6 +90,7 @@ public class ToolBar extends JPanel
 		add(thicknessSpinner);
 		add(Box.createRigidArea(new Dimension(100, 0)));
 		add(fill);
+		add(cut);
 	}
 
 	@Override
@@ -106,6 +116,10 @@ public class ToolBar extends JPanel
 		else if (regularPentagon.isSelected())
 		{
 			return REGULAR_PENTAGON_BUTTON;
+		}
+		else if(cut.isSelected())
+		{
+			return CUT_BUTTON;
 		}
 		else
 			return NONE;
