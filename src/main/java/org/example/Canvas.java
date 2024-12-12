@@ -3,6 +3,7 @@ package org.example;
 import fillPatterns.CheckerboardPattern;
 import fillPatterns.SolidPattern;
 import objectData3D.Cube;
+import objectData3D.Curve;
 import objectData3D.Scene;
 import objectOps.SutherlandHodgman;
 import rasterOps3D.Renderer3DLine;
@@ -62,6 +63,7 @@ public class Canvas extends JPanel
 
 		scene = new Scene();
 		scene.add(new Cube());
+		scene.add(new Curve());
 		renderer3D = new Renderer3DLine();
 		camera = new Camera();
 
@@ -283,13 +285,24 @@ public class Canvas extends JPanel
 	private void start()
 	{
 		img.clear();
+//		Vec3D observerPosition = new Vec3D(2, 2, 2);
+//		camera = new Camera()
+//				.withPosition(observerPosition)
+//				.withAzimuth(azimuthToOrigin(observerPosition))
+//				.withZenith(zenithToOrigin(observerPosition));
+//		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double)img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
+		renderScene();
+		repaint();
+	}
+
+	private void renderScene()
+	{
 		Vec3D observerPosition = new Vec3D(2, 2, 2);
-		Camera camera = new Camera()
+		camera = new Camera()
 				.withPosition(observerPosition)
 				.withAzimuth(azimuthToOrigin(observerPosition))
 				.withZenith(zenithToOrigin(observerPosition));
 		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double)img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
-		repaint();
 	}
 
 	private void clearCanvas()

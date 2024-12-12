@@ -100,5 +100,4 @@ public class Cubic {
 		final Point3D res = new Point3D(t * t * t, t * t, t, 1).mul(controlMat);
 		return new Point3D(res.ignoreW());
 	}
-
 }
