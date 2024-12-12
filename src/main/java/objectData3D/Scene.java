@@ -21,4 +21,9 @@ public class Scene
     {
         this.objects.remove(object3D);
     }
+
+    public List<Object3D> getObjects()
+    {
+        return this.objects;
+    }
 }

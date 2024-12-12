@@ -8,13 +8,13 @@ import java.util.List;
 public class Object3D
 {
     private final List<Point3D> vertexBuffer;
-    private final List<Integer> indeBuffer;
+    private final List<Integer> indexBuffer;
     private final Mat4 modelMat;
 
-    public Object3D(List<Point3D> vertexBuffer, List<Integer> indeBuffer, Mat4 modelMat)
+    public Object3D(List<Point3D> vertexBuffer, List<Integer> indexBuffer, Mat4 modelMat)
     {
         this.vertexBuffer = vertexBuffer;
-        this.indeBuffer = indeBuffer;
+        this.indexBuffer = indexBuffer;
         this.modelMat = modelMat;
     }
 
@@ -23,9 +23,9 @@ public class Object3D
         return vertexBuffer;
     }
 
-    public List<Integer> getIndeBuffer()
+    public List<Integer> getIndexBuffer()
     {
-        return indeBuffer;
+        return indexBuffer;
     }
 
     public Mat4 getModelMat()

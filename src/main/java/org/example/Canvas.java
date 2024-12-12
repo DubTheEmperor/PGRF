@@ -2,13 +2,20 @@ package org.example;
 
 import fillPatterns.CheckerboardPattern;
 import fillPatterns.SolidPattern;
+import objectData3D.Cube;
+import objectData3D.Scene;
 import objectOps.SutherlandHodgman;
+import rasterOps3D.Renderer3DLine;
 import toolBarData.ToolBar;
 import objectData.*;
 import rasterData.RasterBI;
 import rasterOps.Polygoner;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
+import transfroms.Camera;
+import transfroms.Mat4PerspRH;
+import transfroms.Vec2D;
+import transfroms.Vec3D;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -28,8 +35,8 @@ public class Canvas extends JPanel
 	private TrivialLiner liner;
 	private Polygoner polygoner;
 
-	private int r1;
-	private int c1;
+	private int y1;
+	private int x1;
 	private int r2;
 	private int c2;
 
@@ -38,11 +45,13 @@ public class Canvas extends JPanel
 	private RegularPentagon regularPentagon;
 	private Polygon cuttingPolygon;
 
+	private Scene scene;
+	private Renderer3DLine renderer3D;
+	private Camera camera;
+
 	private List<Shape> shapes;
 
 	private Shape currentShape;
-
-	private SutherlandHodgman clipPolygon;
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
@@ -50,7 +59,11 @@ public class Canvas extends JPanel
 		liner = new TrivialLiner();
 		polygoner = new Polygoner();
 		shapes = new ArrayList<>();
-		clipPolygon = new SutherlandHodgman();
+
+		scene = new Scene();
+		scene.add(new Cube());
+		renderer3D = new Renderer3DLine();
+		camera = new Camera();
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
@@ -65,8 +78,8 @@ public class Canvas extends JPanel
 			public void mousePressed(MouseEvent e)
 			{
 				int selectedButton = toolBar.getSelectedButton();
-				c1 = e.getX();
-				r1 = e.getY();
+				x1 = e.getX();
+				y1 = e.getY();
 
 				if (selectedButton != ToolBar.POLYGON_BUTTON)
 					addPolygon();
@@ -78,13 +91,13 @@ public class Canvas extends JPanel
 
 				if (selectedButton == ToolBar.FILL_BUTTON)
 				{
-					Optional<Integer> maybeBackgroundColor = img.getColor(c1, r1);
+					Optional<Integer> maybeBackgroundColor = img.getColor(x1, y1);
 
 					if (maybeBackgroundColor.isPresent())
 					{
 						int backgroundColor = maybeBackgroundColor.get();
 						int fillColor = 0x008000;
-						List<Point2D> filledPoints = SeedFill4BG.fill(img, c1, r1, backgroundColor, fillColor);
+						List<Point2D> filledPoints = SeedFill4BG.fill(img, x1, y1, backgroundColor, fillColor);
 						FilledArea filledArea = new FilledArea(filledPoints, fillColor);
 						currentShape = filledArea;
 						shapes.add(filledArea);
@@ -97,7 +110,7 @@ public class Canvas extends JPanel
 					if (polygon == null)
 						polygon = new Polygon(0x000000, toolBar.getThickness(), true, new SolidPattern(0xff00ff));
 
-					polygon.addPoint(new Point2D(c1, r1));
+					polygon.addPoint(new Point2D(x1, y1));
 					currentShape = polygon;
 					polygoner.draw(img, polygon, liner, polygon.isFilled());
 				}
@@ -108,7 +121,7 @@ public class Canvas extends JPanel
 					if (cuttingPolygon == null)
 						cuttingPolygon = new Polygon(0xff0000, 1, false, new SolidPattern(0xff00ff));
 
-					cuttingPolygon.addPoint(new Point2D(c1, r1));
+					cuttingPolygon.addPoint(new Point2D(x1, y1));
 					currentShape = cuttingPolygon;
 					polygoner.draw(img, cuttingPolygon, liner, cuttingPolygon.isFilled());
 				}
@@ -148,7 +161,7 @@ public class Canvas extends JPanel
 
 				if (selectedButton == ToolBar.LINE_BUTTON)
 				{
-					line = new Line(new Point2D(c1, r1), new Point2D(x, y), 0x000000, toolBar.getThickness());
+					line = new Line(new Point2D(x1, y1), new Point2D(x, y), 0x000000, toolBar.getThickness());
 					currentShape = line;
 
 					if ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0)
@@ -160,13 +173,19 @@ public class Canvas extends JPanel
 				}
 				else if (selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
 				{
-					Point2D center = new Point2D(c1, r1);
+					Point2D center = new Point2D(x1, y1);
 					Point2D secondPoint = new Point2D(x, y);
 
 					regularPentagon = new RegularPentagon(center, (int) RegularPentagon.distanceBetween(center, secondPoint), 0x000000, toolBar.getThickness(), true, new CheckerboardPattern(0xff00ff, 10));
 					currentShape = regularPentagon;
 
 					polygoner.draw(img, regularPentagon, liner, regularPentagon.isFilled());
+				}
+				else if(selectedButton == ToolBar.CAMERA_BUTTON)
+				{
+					double dx = x1 - x;
+					double dy = y1 - y;
+					camera.addAzimuth(dx / 100).addZenith(dy / 100);
 				}
 				repaint();
 			}
@@ -236,9 +255,40 @@ public class Canvas extends JPanel
 		}
 	}
 
+	private double azimuthToOrigin(Vec3D observerPosition)
+	{
+		return observerPosition
+				.opposite()
+				.ignoreZ()
+				.normalized()
+				.map(viewNormalized -> {
+					double angle = Math.acos(viewNormalized.dot(new Vec2D(1, 0)));
+					return (viewNormalized.getY() > 0 ? angle : 2 * Math.PI - angle);
+				})
+				.orElse(0.0);
+	}
+
+	private double zenithToOrigin(Vec3D observerPosition)
+	{
+		return observerPosition
+				.opposite()
+				.normalized()
+				.flatMap(view -> view.withZ(0).normalized().map(projection -> {
+					double angle = Math.acos(view.dot(projection));
+					return (view.getZ() > 0) ? angle : -angle;
+				}))
+				.orElse(0.0);
+	}
+
 	private void start()
 	{
 		img.clear();
+		Vec3D observerPosition = new Vec3D(2, 2, 2);
+		Camera camera = new Camera()
+				.withPosition(observerPosition)
+				.withAzimuth(azimuthToOrigin(observerPosition))
+				.withZenith(zenithToOrigin(observerPosition));
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double)img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
 		repaint();
 	}
 

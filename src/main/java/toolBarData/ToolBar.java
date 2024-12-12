@@ -22,6 +22,7 @@ public class ToolBar extends JPanel
 	public static final int FILL_BUTTON = 2;
 	public static final int REGULAR_PENTAGON_BUTTON = 3;
 	public static final int CUT_BUTTON = 4;
+	public static final int CAMERA_BUTTON = 5;
 
 	public ToolBar()
 	{

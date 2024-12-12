@@ -29,13 +29,13 @@ public class Cube extends Object3D
 
                         3, 7,
                         6, 7,
-                        0, 3,
+                        2, 6,
 
-                        4, 6,
+                        6, 4,
                         0, 4,
                         4, 5,
                         1, 5,
-                        5, 7
+                        7, 5
                 ),
                 new Mat4Identity()
         );
