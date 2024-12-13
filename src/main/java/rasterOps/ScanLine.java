@@ -12,7 +12,7 @@ import java.util.List;
 
 public class ScanLine
 {
-	public void draw(Raster raster, Polygon polygon, PatternFill patternFill)
+	public static void draw(Raster raster, Polygon polygon, PatternFill patternFill)
 	{
 		List<Integer> yList = new ArrayList<>();
 		for (int i = 0; i < polygon.size(); i++)
@@ -47,7 +47,7 @@ public class ScanLine
 		}
 	}
 
-	private List<Integer> findIntersections(Polygon polygon, int scanlineY)
+	private static List<Integer> findIntersections(Polygon polygon, int scanlineY)
 	{
 		List<Integer> intersections = new ArrayList<>();
 

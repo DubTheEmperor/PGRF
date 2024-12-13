@@ -4,6 +4,7 @@ import fillPatterns.CheckerboardPattern;
 import fillPatterns.SolidPattern;
 import objectData3D.Cube;
 import objectData3D.Curve;
+import objectData3D.Pyramid;
 import objectData3D.Scene;
 import objectOps.SutherlandHodgman;
 import rasterOps3D.Renderer3DLine;
@@ -36,10 +37,8 @@ public class Canvas extends JPanel
 	private TrivialLiner liner;
 	private Polygoner polygoner;
 
-	private int y1;
 	private int x1;
-	private int r2;
-	private int c2;
+	private int y1;
 
 	private Polygon polygon;
 	private Line line;
@@ -49,6 +48,7 @@ public class Canvas extends JPanel
 	private Scene scene;
 	private Renderer3DLine renderer3D;
 	private Camera camera;
+	private double cameraSpeed;
 
 	private List<Shape> shapes;
 
@@ -64,11 +64,14 @@ public class Canvas extends JPanel
 		scene = new Scene();
 		scene.add(new Cube());
 		scene.add(new Curve());
+		scene.add(new Pyramid());
 		renderer3D = new Renderer3DLine();
 		camera = new Camera();
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
+
+		cameraSpeed = 0.5;
 
 		setPreferredSize(new Dimension(width, height));
 
@@ -86,7 +89,7 @@ public class Canvas extends JPanel
 				if (selectedButton != ToolBar.POLYGON_BUTTON)
 					addPolygon();
 
-				if(selectedButton != ToolBar.CUT_BUTTON)
+				if (selectedButton != ToolBar.CUT_BUTTON)
 				{
 					cuttingPolygon = null;
 				}
@@ -145,7 +148,7 @@ public class Canvas extends JPanel
 				}
 				else if (selectedButton == ToolBar.REGULAR_PENTAGON_BUTTON)
 				{
-					if(regularPentagon != null)
+					if (regularPentagon != null)
 						shapes.add(regularPentagon);
 				}
 			}
@@ -183,15 +186,45 @@ public class Canvas extends JPanel
 
 					polygoner.draw(img, regularPentagon, liner, regularPentagon.isFilled());
 				}
-				else if(selectedButton == ToolBar.CAMERA_BUTTON)
+				else if (selectedButton == ToolBar.NONE)
 				{
-					double dx = x1 - x;
-					double dy = y1 - y;
-					camera.addAzimuth(dx / 100).addZenith(dy / 100);
+					double dx = x - x1;
+					double dy = y - y1;
+
+					// Adjust camera azimuth and zenith based on mouse movement
+					camera = camera.addAzimuth(-dx / 100).addZenith(dy / 100);
+
+					// Update x1 and y1 to the new mouse position
+					x1 = x;
+					y1 = y;
+
+					img.clear();
 				}
 				repaint();
 			}
 		});
+
+		addMouseWheelListener(new MouseWheelListener()
+		{
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e)
+			{
+				int notches = e.getWheelRotation();
+				if (notches < 0)
+				{
+					// Scrolling up (zoom in)
+					camera = camera.forward(cameraSpeed);
+				}
+				else
+				{
+					// Scrolling down (zoom out)
+					camera = camera.backward(cameraSpeed);
+				}
+				img.clear();
+				repaint();
+			}
+		});
+
 
 		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("C"), "clearCanvas");
 		getActionMap().put("clearCanvas", new AbstractAction()
@@ -202,7 +235,6 @@ public class Canvas extends JPanel
 				clearCanvas();
 			}
 		});
-		setFocusable(true);
 
 		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("ENTER"), "cutPolygons");
 		getActionMap().put("cutPolygons", new AbstractAction()
@@ -210,14 +242,19 @@ public class Canvas extends JPanel
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				for (int i = 0; i < shapes.size(); i++) {
+				for (int i = 0; i < shapes.size(); i++)
+				{
 					Shape shape = shapes.get(i);
-					if (shape instanceof Polygon) {
+					if (shape instanceof Polygon)
+					{
 						Polygon clipped = SutherlandHodgman.clipPolygon((Polygon) shape, cuttingPolygon);
-						if (clipped.size() > 2) {
+						if (clipped.size() > 2)
+						{
 							System.out.println("Clipping succeeded for shape " + i);
 							shapes.set(i, clipped);
-						} else {
+						}
+						else
+						{
 							System.out.println("Clipping failed or resulted in invalid polygon for shape " + i);
 						}
 					}
@@ -227,13 +264,69 @@ public class Canvas extends JPanel
 				repaint();
 			}
 		});
+
+		// Bind keys for camera movement
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("W"), "cameraForward");
+		getActionMap().put("cameraForward", new AbstractAction()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				// Move the camera forward
+				camera = camera.up(cameraSpeed);
+				img.clear();
+				repaint();
+			}
+		});
+
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("S"), "cameraBackward");
+		getActionMap().put("cameraBackward", new AbstractAction()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				// Move the camera backward
+				camera = camera.down(cameraSpeed);
+				img.clear();
+				repaint();
+			}
+		});
+
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("A"), "cameraLeft");
+		getActionMap().put("cameraLeft", new AbstractAction()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				// Move the camera left
+				camera = camera.left(cameraSpeed);
+				img.clear();
+				repaint();
+			}
+		});
+
+		getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("D"), "cameraRight");
+		getActionMap().put("cameraRight", new AbstractAction()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				// Move the camera right
+				camera = camera.right(cameraSpeed);
+				img.clear();
+				repaint();
+			}
+		});
 		setFocusable(true);
+		requestFocusInWindow();
 	}
 
 	@Override
 	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
+
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
 
 		for (Shape shape : shapes)
 		{
@@ -263,7 +356,8 @@ public class Canvas extends JPanel
 				.opposite()
 				.ignoreZ()
 				.normalized()
-				.map(viewNormalized -> {
+				.map(viewNormalized ->
+				{
 					double angle = Math.acos(viewNormalized.dot(new Vec2D(1, 0)));
 					return (viewNormalized.getY() > 0 ? angle : 2 * Math.PI - angle);
 				})
@@ -275,7 +369,8 @@ public class Canvas extends JPanel
 		return observerPosition
 				.opposite()
 				.normalized()
-				.flatMap(view -> view.withZ(0).normalized().map(projection -> {
+				.flatMap(view -> view.withZ(0).normalized().map(projection ->
+				{
 					double angle = Math.acos(view.dot(projection));
 					return (view.getZ() > 0) ? angle : -angle;
 				}))
@@ -285,24 +380,13 @@ public class Canvas extends JPanel
 	private void start()
 	{
 		img.clear();
-//		Vec3D observerPosition = new Vec3D(2, 2, 2);
-//		camera = new Camera()
-//				.withPosition(observerPosition)
-//				.withAzimuth(azimuthToOrigin(observerPosition))
-//				.withZenith(zenithToOrigin(observerPosition));
-//		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double)img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
-		renderScene();
-		repaint();
-	}
-
-	private void renderScene()
-	{
 		Vec3D observerPosition = new Vec3D(2, 2, 2);
 		camera = new Camera()
 				.withPosition(observerPosition)
 				.withAzimuth(azimuthToOrigin(observerPosition))
 				.withZenith(zenithToOrigin(observerPosition));
-		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double)img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
+		repaint();
 	}
 
 	private void clearCanvas()

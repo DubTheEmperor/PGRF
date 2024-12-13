@@ -1,6 +1,5 @@
 package objectOps;
 
-import objectData.Line;
 import objectData.Point2D;
 import objectData.Polygon;
 
@@ -68,7 +67,7 @@ public class SutherlandHodgman
 		double crossProduct = dx * (point.getY() - edgeStart.getY()) - dy * (point.getX() - edgeStart.getX());
 
 		// Use a small tolerance to handle edge cases
-		double epsilon = 1e-9; // Tolerance for floating-point comparisons
+		double epsilon = 1e-9;
 		return crossProduct >= -epsilon;
 	}
 
@@ -86,7 +85,6 @@ public class SutherlandHodgman
 
 		if (determinant == 0)
 		{
-			System.out.println("nigga");
 			return null;
 		}
 
