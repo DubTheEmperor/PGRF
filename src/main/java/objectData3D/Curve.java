@@ -8,7 +8,7 @@ import java.util.stream.IntStream;
 
 public class Curve extends Object3D
 {
-    public Curve()
+    public Curve(int color)
     {
         super(
                 IntStream
@@ -21,7 +21,8 @@ public class Curve extends Object3D
                                 new Point3D(-1, 1, 1)
                         ).compute(i / 100.0)).toList(),
                 IntStream.range(0, 100).flatMap(i -> IntStream.of(i, i + 1)).boxed().toList(),
-                new Mat4Identity()
+                new Mat4Identity(),
+                color
         );
     }
 }

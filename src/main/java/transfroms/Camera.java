@@ -412,6 +412,7 @@ public class Camera {
 
 
 	}
+
 	/**
 	 * Returns String representation of this camera
 	 *

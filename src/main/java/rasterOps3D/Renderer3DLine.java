@@ -14,16 +14,16 @@ import java.util.List;
 
 public class Renderer3DLine
 {
-    public void renderScene(Raster raster, Scene scene, Mat4 matView, Mat4 matProjection, Liner liner, int color)
+    public void renderScene(Raster raster, Scene scene, Mat4 matView, Mat4 matProjection, Liner liner)
     {
         for (Object3D object : scene.getObjects())
         {
             final Mat4 objectTransformation = object.getModelMat().mul(matView).mul(matProjection);
-            renderObject(raster, object, objectTransformation, liner, color);
+            renderObject(raster, object, objectTransformation, liner);
         }
     }
 
-    private void renderObject(Raster raster, Object3D object, Mat4 transformation, Liner liner, int color)
+    private void renderObject(Raster raster, Object3D object, Mat4 transformation, Liner liner)
     {
         final List<Point3D> transformedVertices = object
                 .getVertexBuffer()
@@ -49,7 +49,7 @@ public class Renderer3DLine
                     Vec2D firstInViewSpace = toViewSpace(raster, first2D);
                     Vec2D secondInViewSpace = toViewSpace(raster, second2D);
 
-                    liner.draw(raster, new Point2D((int) firstInViewSpace.getX(), (int) firstInViewSpace.getY()), new Point2D((int) secondInViewSpace.getX(), (int) secondInViewSpace.getY()), color);
+                    liner.draw(raster, new Point2D((int) firstInViewSpace.getX(), (int) firstInViewSpace.getY()), new Point2D((int) secondInViewSpace.getX(), (int) secondInViewSpace.getY()), object.getColor());
                 });
             });
         }

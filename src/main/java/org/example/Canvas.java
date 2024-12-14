@@ -2,10 +2,7 @@ package org.example;
 
 import fillPatterns.CheckerboardPattern;
 import fillPatterns.SolidPattern;
-import objectData3D.Cube;
-import objectData3D.Curve;
-import objectData3D.Pyramid;
-import objectData3D.Scene;
+import objectData3D.*;
 import objectOps.SutherlandHodgman;
 import rasterOps3D.Renderer3DLine;
 import toolBarData.ToolBar;
@@ -49,6 +46,7 @@ public class Canvas extends JPanel
 	private Renderer3DLine renderer3D;
 	private Camera camera;
 	private double cameraSpeed;
+	private XAxis xAxis;
 
 	private List<Shape> shapes;
 
@@ -61,12 +59,17 @@ public class Canvas extends JPanel
 		polygoner = new Polygoner();
 		shapes = new ArrayList<>();
 
-		scene = new Scene();
-		scene.add(new Cube());
-		scene.add(new Curve());
-		scene.add(new Pyramid());
-		renderer3D = new Renderer3DLine();
 		camera = new Camera();
+
+		xAxis = new XAxis(0xff0000);
+
+		scene = new Scene();
+		scene.add(xAxis);
+		scene.add(new YAxis(0x00ff00));
+		scene.add(new ZAxis(0x0000ff));
+//		scene.add(new Cube(0xff0000));
+//		scene.add(new Curve(0xff0000));
+		renderer3D = new Renderer3DLine();
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
@@ -192,7 +195,7 @@ public class Canvas extends JPanel
 					double dy = y - y1;
 
 					// Adjust camera azimuth and zenith based on mouse movement
-					camera = camera.addAzimuth(-dx / 100).addZenith(dy / 100);
+					camera = camera.addAzimuth(-dx / 100).addZenith(-dy / 100);
 
 					// Update x1 and y1 to the new mouse position
 					x1 = x;
@@ -326,7 +329,7 @@ public class Canvas extends JPanel
 	{
 		super.paintComponent(g);
 
-		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner);
 
 		for (Shape shape : shapes)
 		{
@@ -380,12 +383,12 @@ public class Canvas extends JPanel
 	private void start()
 	{
 		img.clear();
-		Vec3D observerPosition = new Vec3D(2, 2, 2);
+		Vec3D observerPosition = new Vec3D(3, 3, 3);
 		camera = new Camera()
 				.withPosition(observerPosition)
 				.withAzimuth(azimuthToOrigin(observerPosition))
 				.withZenith(zenithToOrigin(observerPosition));
-		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner, 0xff0000);
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner);
 		repaint();
 	}
 

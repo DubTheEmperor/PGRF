@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Cube extends Object3D
 {
-    public Cube()
+    public Cube(int color)
     {
         super(
                 List.of(
@@ -37,7 +37,8 @@ public class Cube extends Object3D
                         1, 5,
                         7, 5
                 ),
-                new Mat4Identity()
+                new Mat4Identity(),
+                color
         );
     }
 }

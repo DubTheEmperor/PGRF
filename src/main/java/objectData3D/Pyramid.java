@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Pyramid extends Object3D
 {
-    public Pyramid()
+    public Pyramid(int color)
     {
         super(
                 List.of(
@@ -29,7 +29,8 @@ public class Pyramid extends Object3D
                         3, 4,
                         1, 4
                 ),
-                new Mat4Identity()
+                new Mat4Identity(),
+                color
         );
     }
 }

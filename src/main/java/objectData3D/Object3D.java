@@ -10,12 +10,14 @@ public class Object3D
     private final List<Point3D> vertexBuffer;
     private final List<Integer> indexBuffer;
     private final Mat4 modelMat;
+    private final int color;
 
-    public Object3D(List<Point3D> vertexBuffer, List<Integer> indexBuffer, Mat4 modelMat)
+    public Object3D(List<Point3D> vertexBuffer, List<Integer> indexBuffer, Mat4 modelMat, int color)
     {
         this.vertexBuffer = vertexBuffer;
         this.indexBuffer = indexBuffer;
         this.modelMat = modelMat;
+        this.color = color;
     }
 
     public List<Point3D> getVertexBuffer()
@@ -31,5 +33,10 @@ public class Object3D
     public Mat4 getModelMat()
     {
         return modelMat;
+    }
+
+    public int getColor()
+    {
+        return color;
     }
 }
