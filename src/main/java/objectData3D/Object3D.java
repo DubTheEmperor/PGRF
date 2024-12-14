@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Object3D
 {
-    private final List<Point3D> vertexBuffer;
+    protected final List<Point3D> vertexBuffer;
     private final List<Integer> indexBuffer;
     private final Mat4 modelMat;
     private final int color;

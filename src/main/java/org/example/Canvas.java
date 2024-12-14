@@ -2,6 +2,7 @@ package org.example;
 
 import fillPatterns.CheckerboardPattern;
 import fillPatterns.SolidPattern;
+import objectData.Point2D;
 import objectData3D.*;
 import objectOps.SutherlandHodgman;
 import rasterOps3D.Renderer3DLine;
@@ -11,10 +12,7 @@ import rasterData.RasterBI;
 import rasterOps.Polygoner;
 import rasterOps.SeedFill4BG;
 import rasterOps.TrivialLiner;
-import transfroms.Camera;
-import transfroms.Mat4PerspRH;
-import transfroms.Vec2D;
-import transfroms.Vec3D;
+import transfroms.*;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -26,7 +24,9 @@ import javax.swing.*;
 
 public class Canvas extends JPanel
 {
+	private JLabel chosenPolyhedronLabel;
 	private RasterBI img;
+	ToolBar toolBar;
 
 	private int currentX;
 	private int currentY;
@@ -46,7 +46,7 @@ public class Canvas extends JPanel
 	private Renderer3DLine renderer3D;
 	private Camera camera;
 	private double cameraSpeed;
-	private XAxis xAxis;
+	private Polyhedron chosenPolyhedron;
 
 	private List<Shape> shapes;
 
@@ -54,21 +54,47 @@ public class Canvas extends JPanel
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
+		this.toolBar = toolBar;
+		chosenPolyhedronLabel = new JLabel("Chosen polyhedron: ");
+		this.add(chosenPolyhedronLabel);
+
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
 		polygoner = new Polygoner();
 		shapes = new ArrayList<>();
 
 		camera = new Camera();
-
-		xAxis = new XAxis(0xff0000);
-
 		scene = new Scene();
-		scene.add(xAxis);
+		scene.add(new XAxis(0xff0000));
 		scene.add(new YAxis(0x00ff00));
 		scene.add(new ZAxis(0x0000ff));
-//		scene.add(new Cube(0xff0000));
-//		scene.add(new Curve(0xff0000));
+		scene.add(new Cube(0x000000));
+		scene.add(new Pyramid(0x000000));
+		scene.add(new Prism(0x000000));
+		scene.add(new Curve(
+				0x800800,
+				Cubic.BEZIER,
+				new Point3D(-1, -1, -1),
+				new Point3D(1, -1, -1),
+				new Point3D(-1, 1, 1),
+				new Point3D(1, 1, 1)
+		));
+		scene.add(new Curve(
+				0xff00ff,
+				Cubic.FERGUSON,
+				new Point3D(-1, -1, -1),
+				new Point3D(1, -1, -1),
+				new Point3D(-1, 1, 1),
+				new Point3D(1, -1, 1)
+		));
+		scene.add(new Curve(
+				0x00ffff,
+				Cubic.COONS,
+				new Point3D(-2, -7, 5),
+				new Point3D(4, 1, -1),
+				new Point3D(4, -3, -1),
+				new Point3D(10, 5, 5)
+		));
 		renderer3D = new Renderer3DLine();
 
 		currentX = img.getWidth() / 2;
@@ -88,6 +114,13 @@ public class Canvas extends JPanel
 				int selectedButton = toolBar.getSelectedButton();
 				x1 = e.getX();
 				y1 = e.getY();
+
+				if (SwingUtilities.isRightMouseButton(e))
+				{
+					// Handle right-click to select the closest Polyhedron
+					selectClosestPolyhedron(e.getX(), e.getY());
+					return;
+				}
 
 				if (selectedButton != ToolBar.POLYGON_BUTTON)
 					addPolygon();
@@ -113,8 +146,6 @@ public class Canvas extends JPanel
 				}
 				else if (selectedButton == ToolBar.POLYGON_BUTTON)
 				{
-					img.clear();
-
 					if (polygon == null)
 						polygon = new Polygon(0x000000, toolBar.getThickness(), true, new SolidPattern(0xff00ff));
 
@@ -124,8 +155,6 @@ public class Canvas extends JPanel
 				}
 				else if (selectedButton == ToolBar.CUT_BUTTON)
 				{
-					img.clear();
-
 					if (cuttingPolygon == null)
 						cuttingPolygon = new Polygon(0xff0000, 1, false, new SolidPattern(0xff00ff));
 
@@ -200,8 +229,6 @@ public class Canvas extends JPanel
 					// Update x1 and y1 to the new mouse position
 					x1 = x;
 					y1 = y;
-
-					img.clear();
 				}
 				repaint();
 			}
@@ -223,7 +250,6 @@ public class Canvas extends JPanel
 					// Scrolling down (zoom out)
 					camera = camera.backward(cameraSpeed);
 				}
-				img.clear();
 				repaint();
 			}
 		});
@@ -263,7 +289,6 @@ public class Canvas extends JPanel
 					}
 				}
 				cuttingPolygon = null;
-				img.clear();
 				repaint();
 			}
 		});
@@ -277,7 +302,6 @@ public class Canvas extends JPanel
 			{
 				// Move the camera forward
 				camera = camera.up(cameraSpeed);
-				img.clear();
 				repaint();
 			}
 		});
@@ -290,7 +314,6 @@ public class Canvas extends JPanel
 			{
 				// Move the camera backward
 				camera = camera.down(cameraSpeed);
-				img.clear();
 				repaint();
 			}
 		});
@@ -303,7 +326,6 @@ public class Canvas extends JPanel
 			{
 				// Move the camera left
 				camera = camera.left(cameraSpeed);
-				img.clear();
 				repaint();
 			}
 		});
@@ -316,7 +338,6 @@ public class Canvas extends JPanel
 			{
 				// Move the camera right
 				camera = camera.right(cameraSpeed);
-				img.clear();
 				repaint();
 			}
 		});
@@ -327,6 +348,8 @@ public class Canvas extends JPanel
 	@Override
 	public void paintComponent(Graphics g)
 	{
+		img.clear();
+
 		super.paintComponent(g);
 
 		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner);
@@ -350,6 +373,53 @@ public class Canvas extends JPanel
 		{
 			shapes.add(polygon);
 			polygon = null;
+		}
+	}
+
+	public void rotateX()
+	{
+		if(chosenPolyhedron != null)
+		{
+			chosenPolyhedron.rotateX(Math.toRadians(20));
+			repaint();
+		}
+	}
+
+	public void rotateY()
+	{
+		if(chosenPolyhedron != null)
+		{
+			chosenPolyhedron.rotateY(Math.toRadians(20));
+			repaint();
+		}
+	}
+
+	public void rotateZ()
+	{
+		if(chosenPolyhedron != null)
+		{
+			chosenPolyhedron.rotateZ(Math.toRadians(20));
+			repaint();
+		}
+	}
+
+	public void scale(double factor)
+	{
+		if(chosenPolyhedron != null)
+		{
+			Point3D center = chosenPolyhedron.getCenter();
+			chosenPolyhedron.scale(factor);
+			chosenPolyhedron.moveTo(center.getX(), center.getY(), center.getZ());
+			repaint();
+		}
+	}
+
+	public void moveTo(double x, double y, double z)
+	{
+		if(chosenPolyhedron != null)
+		{
+			chosenPolyhedron.moveTo(x, y, z);
+			repaint();
 		}
 	}
 
@@ -380,10 +450,54 @@ public class Canvas extends JPanel
 				.orElse(0.0);
 	}
 
+	private void selectClosestPolyhedron(int mouseX, int mouseY)
+	{
+		double minDistance = Double.MAX_VALUE;
+		double minDepth = Double.MAX_VALUE; // Track the smallest depth
+		Polyhedron closestPolyhedron = null;
+
+		for (Object3D object : scene.getObjects())
+		{
+			if (object instanceof Polyhedron polyhedron)
+			{
+				// Calculate the screen projection of the Polyhedron's center
+				Point3D center = polyhedron.getCenter();
+				Point3D projectedCenter = center
+						.mul(camera.getViewMatrix())
+						.mul(new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100));
+
+				// Extract screen coordinates (normalized)
+				int screenX = (int) ((projectedCenter.getX() / projectedCenter.getW() + 1) * img.getWidth() / 2);
+				int screenY = (int) ((1 - projectedCenter.getY() / projectedCenter.getW()) * img.getHeight() / 2);
+				double depth = projectedCenter.getZ() / projectedCenter.getW(); // Depth after perspective division
+
+				// Calculate the Euclidean distance
+				double distance = Math.sqrt(Math.pow(screenX - mouseX, 2) + Math.pow(screenY - mouseY, 2));
+
+				// Select the closest polyhedron based on depth and distance
+				if (distance < minDistance || (distance == minDistance && depth < minDepth))
+				{
+					minDistance = distance;
+					minDepth = depth;
+					closestPolyhedron = polyhedron;
+				}
+			}
+		}
+
+		if (closestPolyhedron != null)
+		{
+			chosenPolyhedron = closestPolyhedron;
+			chosenPolyhedronLabel.setText("Chosen polyhedron: " + chosenPolyhedron.getClass().getSimpleName());
+			toolBar.setXPosition(chosenPolyhedron.getCenter().getX());
+			toolBar.setYPosition(chosenPolyhedron.getCenter().getY());
+			toolBar.setZPosition(chosenPolyhedron.getCenter().getZ());
+		}
+	}
+
 	private void start()
 	{
 		img.clear();
-		Vec3D observerPosition = new Vec3D(3, 3, 3);
+		Vec3D observerPosition = new Vec3D(6, 6, 6);
 		camera = new Camera()
 				.withPosition(observerPosition)
 				.withAzimuth(azimuthToOrigin(observerPosition))

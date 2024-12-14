@@ -24,8 +24,7 @@ public class Mat4PerspRH extends Mat4Identity {
 	 * @param zf
 	 *            distance to the far clipping plane along z-axis
 	 */
-	public Mat4PerspRH(final double alpha, final double k, final double zn,
-			final double zf) {
+	public Mat4PerspRH(final double alpha, final double k, final double zn, final double zf) {
 		final double h = (1.0 / Math.tan(alpha / 2.0));
 		final double w = k * h;
 		mat[0][0] = w;

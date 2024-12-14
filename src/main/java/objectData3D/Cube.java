@@ -1,11 +1,10 @@
 package objectData3D;
 
-import transfroms.Mat4Identity;
-import transfroms.Point3D;
+import transfroms.*;
 
 import java.util.List;
 
-public class Cube extends Object3D
+public class Cube extends Polyhedron
 {
     public Cube(int color)
     {
