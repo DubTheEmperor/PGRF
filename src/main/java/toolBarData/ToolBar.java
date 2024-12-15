@@ -29,6 +29,8 @@ public class ToolBar extends JPanel
 	private JTextField xPosition;
 	private JTextField yPosition;
 	private JTextField zPosition;
+	private JToggleButton perspectiveProjection;
+	private JToggleButton orthogonalProjection;
 
 	public static final int NONE = -1;
 	public static final int LINE_BUTTON = 0;
@@ -173,6 +175,19 @@ public class ToolBar extends JPanel
 		zPosition.setBorder(null);
 		((AbstractDocument) zPosition.getDocument()).setDocumentFilter(new NumericDocumentFilter());
 
+		ButtonGroup projectionButtonGroup = new ButtonGroup();
+
+		perspectiveProjection = new JToggleButton();
+		perspectiveProjection.setPreferredSize(buttonDimension);
+		perspectiveProjection.setSelectedIcon(new ImageIcon("src/main/icons/perspectiveIconSelected.jpg"));
+		perspectiveProjection.setIcon(new ImageIcon("src/main/icons/perspectiveIcon.jpg"));
+		perspectiveProjection.setSelected(true);
+
+		orthogonalProjection = new JToggleButton();
+		orthogonalProjection.setPreferredSize(buttonDimension);
+		orthogonalProjection.setSelectedIcon(new ImageIcon("src/main/icons/orthogonalIconSelected.jpg"));
+		orthogonalProjection.setIcon(new ImageIcon("src/main/icons/orthogonalIcon.jpg"));
+
 		line.addActionListener(e -> canvas.addPolygon());
 		polygon.addActionListener(e -> canvas.addPolygon());
 		fill.addActionListener(e -> canvas.addPolygon());
@@ -185,6 +200,9 @@ public class ToolBar extends JPanel
 
 		sizeUp.addActionListener(e -> canvas.scale(1.1));
 		sizeDown.addActionListener(e -> canvas.scale(0.9));
+
+		perspectiveProjection.addActionListener(e -> canvas.setPerspectiveProjection());
+		orthogonalProjection.addActionListener(e -> canvas.setOrthogonalProjection());
 
 		FocusListener focusListener = new FocusAdapter() {
 			@Override
@@ -207,6 +225,9 @@ public class ToolBar extends JPanel
 		xPosition.addFocusListener(focusListener);
 		yPosition.addFocusListener(focusListener);
 		zPosition.addFocusListener(focusListener);
+
+		projectionButtonGroup.add(perspectiveProjection);
+		projectionButtonGroup.add(orthogonalProjection);
 
 		positionPanel.add(xPosition);
 		positionPanel.add(Box.createVerticalStrut(3));
@@ -250,6 +271,9 @@ public class ToolBar extends JPanel
 		add(Box.createRigidArea(new Dimension(30, 0)));
 		add(positionLabelPanel);
 		add(positionPanel);
+		add(Box.createRigidArea(new Dimension(30, 0)));
+		add(perspectiveProjection);
+		add(orthogonalProjection);
 	}
 
 	@Override

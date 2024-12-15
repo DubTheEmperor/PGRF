@@ -48,6 +48,7 @@ public class Canvas extends JPanel
 	private Camera camera;
 	private double cameraSpeed;
 	private Object3D chosenObject;
+	private Mat4 projectionMatrix;
 
 	private List<Shape> shapes;
 	private Shape currentShape;
@@ -98,6 +99,12 @@ public class Canvas extends JPanel
 				new Point3D(10, 5, 5)
 		));
 		renderer3D = new Renderer3DLine();
+		projectionMatrix = new Mat4PerspRH(
+				Math.PI / 2,
+				(double) img.getHeight() / img.getWidth(),
+				0.01,
+				100
+		);
 
 		currentX = img.getWidth() / 2;
 		currentY = img.getHeight() / 2;
@@ -236,24 +243,20 @@ public class Canvas extends JPanel
 			}
 		});
 
-		addMouseWheelListener(new MouseWheelListener()
+		addMouseWheelListener(e ->
 		{
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent e)
+			int notches = e.getWheelRotation();
+			if (notches < 0)
 			{
-				int notches = e.getWheelRotation();
-				if (notches < 0)
-				{
-					// Scrolling up (zoom in)
-					camera = camera.forward(cameraSpeed);
-				}
-				else
-				{
-					// Scrolling down (zoom out)
-					camera = camera.backward(cameraSpeed);
-				}
-				repaint();
+				// Scrolling up (zoom in)
+				camera = camera.forward(cameraSpeed);
 			}
+			else
+			{
+				// Scrolling down (zoom out)
+				camera = camera.backward(cameraSpeed);
+			}
+			repaint();
 		});
 
 
@@ -373,6 +376,31 @@ public class Canvas extends JPanel
 		}
 	}
 
+	// Method to set perspective projection
+	public void setPerspectiveProjection()
+	{
+		this.projectionMatrix = new Mat4PerspRH(
+				Math.PI / 2,
+				(double) img.getHeight() / img.getWidth(),
+				0.01,
+				100
+		);
+		repaint(); // Trigger a repaint to apply the new projection immediately
+	}
+
+	// Method to set orthogonal projection
+	public void setOrthogonalProjection()
+	{
+		double width = 20;  // Total width of the visible cuboid (right - left)
+		double height = 20; // Total height of the visible cuboid (top - bottom)
+		double zn = 0.01;   // Near plane distance
+		double zf = 100;    // Far plane distance
+
+		this.projectionMatrix = new Mat4OrthoRH(width, height, zn, zf);
+		repaint(); // Trigger a repaint to apply the new projection immediately
+	}
+
+
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -380,7 +408,7 @@ public class Canvas extends JPanel
 
 		super.paintComponent(g);
 
-		renderer3D.renderScene(img, scene, camera.getViewMatrix(), new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100), liner);
+		renderer3D.renderScene(img, scene, camera.getViewMatrix(), projectionMatrix, liner);
 
 		for (Shape shape : shapes)
 		{
@@ -484,16 +512,24 @@ public class Canvas extends JPanel
 		double minDepth = Double.MAX_VALUE; // Track the smallest depth
 		Object3D closestObject = null;
 
+		Mat4 projectionMatrix;
+
+		// Use the current projection matrix
+		if (this.projectionMatrix instanceof Mat4PerspRH)
+			projectionMatrix = new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100);
+		else
+			projectionMatrix = new Mat4OrthoRH(20, 20, 0.01, 100);
+
 		for (Object3D object : scene.getObjects())
 		{
-			if(object instanceof XAxis || object instanceof YAxis || object instanceof ZAxis)
+			if (object instanceof XAxis || object instanceof YAxis || object instanceof ZAxis)
 				continue;
 
 			// Calculate the screen projection of the Object's center
 			Point3D center = object.getCenter();
 			Point3D projectedCenter = center
 					.mul(camera.getViewMatrix())
-					.mul(new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100));
+					.mul(projectionMatrix);
 
 			// Extract screen coordinates (normalized)
 			int screenX = (int) ((projectedCenter.getX() / projectedCenter.getW() + 1) * img.getWidth() / 2);
@@ -521,6 +557,7 @@ public class Canvas extends JPanel
 			toolBar.setZPosition(chosenObject.getCenter().getZ());
 		}
 	}
+
 
 	private void start()
 	{
