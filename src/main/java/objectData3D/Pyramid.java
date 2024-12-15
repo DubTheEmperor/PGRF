@@ -5,7 +5,7 @@ import transfroms.Point3D;
 
 import java.util.List;
 
-public class Pyramid extends Polyhedron
+public class Pyramid extends Object3D
 {
     public Pyramid(int color)
     {

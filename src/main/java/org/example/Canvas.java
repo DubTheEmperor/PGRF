@@ -24,9 +24,10 @@ import javax.swing.*;
 
 public class Canvas extends JPanel
 {
-	private JLabel chosenPolyhedronLabel;
+	private JLabel chosenObjectLabel;
 	private RasterBI img;
 	ToolBar toolBar;
+	private Timer animationTimer;
 
 	private int currentX;
 	private int currentY;
@@ -46,17 +47,16 @@ public class Canvas extends JPanel
 	private Renderer3DLine renderer3D;
 	private Camera camera;
 	private double cameraSpeed;
-	private Polyhedron chosenPolyhedron;
+	private Object3D chosenObject;
 
 	private List<Shape> shapes;
-
 	private Shape currentShape;
 
 	public Canvas(int width, int height, ToolBar toolBar)
 	{
 		this.toolBar = toolBar;
-		chosenPolyhedronLabel = new JLabel("Chosen polyhedron: ");
-		this.add(chosenPolyhedronLabel);
+		chosenObjectLabel = new JLabel("Chosen object: ");
+		this.add(chosenObjectLabel);
 
 		img = new RasterBI(width, height);
 		liner = new TrivialLiner();
@@ -68,7 +68,9 @@ public class Canvas extends JPanel
 		scene.add(new XAxis(0xff0000));
 		scene.add(new YAxis(0x00ff00));
 		scene.add(new ZAxis(0x0000ff));
-		scene.add(new Cube(0x000000));
+		Cube cube = new Cube(0x000000);
+		addAnimation(cube);
+		scene.add(cube);
 		scene.add(new Pyramid(0x000000));
 		scene.add(new Prism(0x000000));
 		scene.add(new Curve(
@@ -117,8 +119,8 @@ public class Canvas extends JPanel
 
 				if (SwingUtilities.isRightMouseButton(e))
 				{
-					// Handle right-click to select the closest Polyhedron
-					selectClosestPolyhedron(e.getX(), e.getY());
+					// Handle right-click to select the closest Object3D
+					selectClosestObject(e.getX(), e.getY());
 					return;
 				}
 
@@ -345,6 +347,32 @@ public class Canvas extends JPanel
 		requestFocusInWindow();
 	}
 
+	public void addAnimation(Object3D object)
+	{
+		if (object == null) return;
+
+		if (animationTimer != null)
+		{
+			animationTimer.stop();
+		}
+
+		animationTimer = new Timer(30, e ->
+		{
+			object.rotateX(Math.toRadians(2));
+			repaint();
+		});
+
+		animationTimer.start();
+	}
+
+	public void stopAnimation()
+	{
+		if (animationTimer != null)
+		{
+			animationTimer.stop();
+		}
+	}
+
 	@Override
 	public void paintComponent(Graphics g)
 	{
@@ -378,47 +406,47 @@ public class Canvas extends JPanel
 
 	public void rotateX()
 	{
-		if(chosenPolyhedron != null)
+		if(chosenObject != null)
 		{
-			chosenPolyhedron.rotateX(Math.toRadians(20));
+			chosenObject.rotateX(Math.toRadians(20));
 			repaint();
 		}
 	}
 
 	public void rotateY()
 	{
-		if(chosenPolyhedron != null)
+		if(chosenObject != null)
 		{
-			chosenPolyhedron.rotateY(Math.toRadians(20));
+			chosenObject.rotateY(Math.toRadians(20));
 			repaint();
 		}
 	}
 
 	public void rotateZ()
 	{
-		if(chosenPolyhedron != null)
+		if(chosenObject != null)
 		{
-			chosenPolyhedron.rotateZ(Math.toRadians(20));
+			chosenObject.rotateZ(Math.toRadians(20));
 			repaint();
 		}
 	}
 
 	public void scale(double factor)
 	{
-		if(chosenPolyhedron != null)
+		if(chosenObject != null)
 		{
-			Point3D center = chosenPolyhedron.getCenter();
-			chosenPolyhedron.scale(factor);
-			chosenPolyhedron.moveTo(center.getX(), center.getY(), center.getZ());
+			Point3D center = chosenObject.getCenter();
+			chosenObject.scale(factor);
+			chosenObject.moveTo(center.getX(), center.getY(), center.getZ());
 			repaint();
 		}
 	}
 
 	public void moveTo(double x, double y, double z)
 	{
-		if(chosenPolyhedron != null)
+		if(chosenObject != null)
 		{
-			chosenPolyhedron.moveTo(x, y, z);
+			chosenObject.moveTo(x, y, z);
 			repaint();
 		}
 	}
@@ -450,47 +478,47 @@ public class Canvas extends JPanel
 				.orElse(0.0);
 	}
 
-	private void selectClosestPolyhedron(int mouseX, int mouseY)
+	private void selectClosestObject(int mouseX, int mouseY)
 	{
 		double minDistance = Double.MAX_VALUE;
 		double minDepth = Double.MAX_VALUE; // Track the smallest depth
-		Polyhedron closestPolyhedron = null;
+		Object3D closestObject = null;
 
 		for (Object3D object : scene.getObjects())
 		{
-			if (object instanceof Polyhedron polyhedron)
+			if(object instanceof XAxis || object instanceof YAxis || object instanceof ZAxis)
+				continue;
+
+			// Calculate the screen projection of the Object's center
+			Point3D center = object.getCenter();
+			Point3D projectedCenter = center
+					.mul(camera.getViewMatrix())
+					.mul(new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100));
+
+			// Extract screen coordinates (normalized)
+			int screenX = (int) ((projectedCenter.getX() / projectedCenter.getW() + 1) * img.getWidth() / 2);
+			int screenY = (int) ((1 - projectedCenter.getY() / projectedCenter.getW()) * img.getHeight() / 2);
+			double depth = projectedCenter.getZ() / projectedCenter.getW(); // Depth after perspective division
+
+			// Calculate the Euclidean distance
+			double distance = Math.sqrt(Math.pow(screenX - mouseX, 2) + Math.pow(screenY - mouseY, 2));
+
+			// Select the closest object based on depth and distance
+			if (distance < minDistance || (distance == minDistance && depth < minDepth))
 			{
-				// Calculate the screen projection of the Polyhedron's center
-				Point3D center = polyhedron.getCenter();
-				Point3D projectedCenter = center
-						.mul(camera.getViewMatrix())
-						.mul(new Mat4PerspRH(Math.PI / 2, (double) img.getHeight() / img.getWidth(), 0.01, 100));
-
-				// Extract screen coordinates (normalized)
-				int screenX = (int) ((projectedCenter.getX() / projectedCenter.getW() + 1) * img.getWidth() / 2);
-				int screenY = (int) ((1 - projectedCenter.getY() / projectedCenter.getW()) * img.getHeight() / 2);
-				double depth = projectedCenter.getZ() / projectedCenter.getW(); // Depth after perspective division
-
-				// Calculate the Euclidean distance
-				double distance = Math.sqrt(Math.pow(screenX - mouseX, 2) + Math.pow(screenY - mouseY, 2));
-
-				// Select the closest polyhedron based on depth and distance
-				if (distance < minDistance || (distance == minDistance && depth < minDepth))
-				{
-					minDistance = distance;
-					minDepth = depth;
-					closestPolyhedron = polyhedron;
-				}
+				minDistance = distance;
+				minDepth = depth;
+				closestObject = object;
 			}
 		}
 
-		if (closestPolyhedron != null)
+		if (closestObject != null)
 		{
-			chosenPolyhedron = closestPolyhedron;
-			chosenPolyhedronLabel.setText("Chosen polyhedron: " + chosenPolyhedron.getClass().getSimpleName());
-			toolBar.setXPosition(chosenPolyhedron.getCenter().getX());
-			toolBar.setYPosition(chosenPolyhedron.getCenter().getY());
-			toolBar.setZPosition(chosenPolyhedron.getCenter().getZ());
+			chosenObject = closestObject;
+			chosenObjectLabel.setText("Chosen object: " + chosenObject.getClass().getSimpleName());
+			toolBar.setXPosition(chosenObject.getCenter().getX());
+			toolBar.setYPosition(chosenObject.getCenter().getY());
+			toolBar.setZPosition(chosenObject.getCenter().getZ());
 		}
 	}
 

@@ -4,7 +4,7 @@ import transfroms.*;
 
 import java.util.List;
 
-public class Cube extends Polyhedron
+public class Cube extends Object3D
 {
     public Cube(int color)
     {

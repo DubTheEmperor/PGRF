@@ -195,7 +195,7 @@ public class ToolBar extends JPanel
 						|| zPosition.getText().isEmpty()
 				)
 					return;
-
+				
 				canvas.moveTo(
 						Double.parseDouble(xPosition.getText()),
 						Double.parseDouble(yPosition.getText()),

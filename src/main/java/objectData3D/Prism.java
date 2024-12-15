@@ -5,7 +5,7 @@ import transfroms.Point3D;
 
 import java.util.List;
 
-public class Prism extends Polyhedron
+public class Prism extends Object3D
 {
 	public Prism(int color)
 	{
